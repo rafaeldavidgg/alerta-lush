@@ -3,12 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProductList } from '@/components/ProductList';
-import type { TrackedProduct } from '@core/types';
+import type { PublicTrackedProduct } from '@core/types';
 
-const product: TrackedProduct = {
+const product: PublicTrackedProduct = {
   id: 'p1',
   url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
-  chat_id: '123',
   etiqueta: 'Silvery Moon',
   tienda: 'lush.com',
   estado_actual: 'out_of_stock',

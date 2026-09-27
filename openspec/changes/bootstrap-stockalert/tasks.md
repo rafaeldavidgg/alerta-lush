@@ -59,7 +59,7 @@
 
 ## 9. End-to-end integration verification
 
-- [ ] 9.1 Register a real Lush product through the deployed Vercel app and trigger the workflow manually; verify the run logs show the product evaluated and a state recorded in the shared store.
+- [x] 9.1 Register a real Lush product through the deployed Vercel app and trigger the workflow manually; verify the run logs show the product evaluated and a state recorded in the shared store.
 - [x] 9.2 Run an end-to-end restock scenario against the in-memory store and a test chat; verify a Telegram restock message is received exactly once and a repeat run sends nothing.
 - [x] 9.3 Verify the public repository exposes no tracked product data or secrets, and that a `403`/`429`/timeout from a store records `unknown` without a notification.
 - [x] 9.4 Run `openspec validate bootstrap-stockalert --strict` and confirm the change validates with no errors.

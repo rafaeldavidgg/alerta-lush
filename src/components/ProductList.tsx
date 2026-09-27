@@ -1,10 +1,10 @@
 'use client';
 
-import type { TrackedProduct } from '@core/types';
+import type { PublicTrackedProduct } from '@core/types';
 import { formatLastCheck, stateLabel } from '@/lib/labels';
 
 export interface ProductListProps {
-  products: TrackedProduct[];
+  products: PublicTrackedProduct[];
   onDelete: (id: string) => Promise<void> | void;
 }
 

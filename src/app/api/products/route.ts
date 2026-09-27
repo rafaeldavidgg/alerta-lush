@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getProductStore } from '@core/storage';
+import { toPublicProduct } from '@core/types';
 import { validateRegistration } from '@core/validation';
 
 export const dynamic = 'force-dynamic';
 
-/** List every tracked product. */
+/** List every tracked product (without the private chat_id). */
 export async function GET() {
   const store = getProductStore();
   const products = await store.list();
-  return NextResponse.json({ products });
+  return NextResponse.json({ products: products.map(toPublicProduct) });
 }
 
 /** Register a new tracked product. */
@@ -32,5 +33,5 @@ export async function POST(request: Request) {
     etiqueta: result.value.etiqueta,
     tienda: result.value.tienda,
   });
-  return NextResponse.json({ product }, { status: 201 });
+  return NextResponse.json({ product: toPublicProduct(product) }, { status: 201 });
 }

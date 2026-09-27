@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { TrackedProduct } from '@core/types';
+import type { PublicTrackedProduct } from '@core/types';
 import { ProductForm, type ProductFormValues } from '@/components/ProductForm';
 import { ProductList } from '@/components/ProductList';
 
 export default function HomePage() {
-  const [products, setProducts] = useState<TrackedProduct[]>([]);
+  const [products, setProducts] = useState<PublicTrackedProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +15,7 @@ export default function HomePage() {
     try {
       const response = await fetch('/api/products', { cache: 'no-store' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = (await response.json()) as { products?: TrackedProduct[] };
+      const data = (await response.json()) as { products?: PublicTrackedProduct[] };
       setProducts(data.products ?? []);
       setError(null);
     } catch (caught) {

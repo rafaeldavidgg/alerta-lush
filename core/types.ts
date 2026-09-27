@@ -51,3 +51,15 @@ export interface NewTrackedProduct {
   etiqueta?: string;
   tienda: string;
 }
+
+/**
+ * A tracked product as exposed to the browser/API: everything except the
+ * Telegram `chat_id`, which is personal data and must never leave the server.
+ */
+export type PublicTrackedProduct = Omit<TrackedProduct, 'chat_id'>;
+
+/** Strip the private `chat_id` before a product is returned to a client. */
+export function toPublicProduct(product: TrackedProduct): PublicTrackedProduct {
+  const { chat_id: _omit, ...rest } = product;
+  return rest;
+}
