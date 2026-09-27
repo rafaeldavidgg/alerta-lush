@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadWorkerConfig } from '@core/config';
+import { loadTelegramWebhookConfig, loadWorkerConfig } from '@core/config';
 
 describe('loadWorkerConfig', () => {
   it('throws a clear error when the Telegram token is missing', () => {
@@ -27,5 +27,27 @@ describe('loadWorkerConfig', () => {
       UPSTASH_REDIS_REST_TOKEN: 'secret',
     });
     expect(config).toEqual({ telegramBotToken: 'token', storeBackend: 'upstash' });
+  });
+});
+
+describe('loadTelegramWebhookConfig', () => {
+  it('throws when the Telegram token is missing', () => {
+    expect(() => loadTelegramWebhookConfig({ TELEGRAM_WEBHOOK_SECRET: 'secret' })).toThrow(
+      /TELEGRAM_BOT_TOKEN/,
+    );
+  });
+
+  it('throws when the webhook secret is missing', () => {
+    expect(() => loadTelegramWebhookConfig({ TELEGRAM_BOT_TOKEN: 'token' })).toThrow(
+      /TELEGRAM_WEBHOOK_SECRET/,
+    );
+  });
+
+  it('does not require Upstash credentials', () => {
+    const config = loadTelegramWebhookConfig({
+      TELEGRAM_BOT_TOKEN: 'token',
+      TELEGRAM_WEBHOOK_SECRET: 'secret',
+    });
+    expect(config).toEqual({ telegramBotToken: 'token', webhookSecret: 'secret' });
   });
 });

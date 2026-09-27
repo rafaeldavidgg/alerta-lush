@@ -50,20 +50,10 @@ All free.
 1. Open Telegram and chat with [@BotFather](https://t.me/BotFather).
 2. Send `/newbot`, choose a name and a username ending in `bot`.
 3. Copy the **token** (looks like `123456789:AA...`). This is
-   `TELEGRAM_BOT_TOKEN`.
-4. Send your new bot any message (for example `hi`) so it is allowed to reply
-   to you.
+   `TELEGRAM_BOT_TOKEN`. The web app uses it to reply with your `chat_id`; the
+   scheduled worker uses it to send restock alerts.
 
-### 2. Get your chat_id
-
-1. Send a message to your bot (step 1.4).
-2. Open this URL in a browser, replacing `<TOKEN>` with your token:
-   `https://api.telegram.org/bot<TOKEN>/getUpdates`
-3. Find `"chat":{"id":123456789,...}` — that number is your `chat_id`.
-4. To notify several people/chats, repeat for each one; each tracked product
-   stores its own `chat_id`.
-
-### 3. Create the Upstash Redis database
+### 2. Create the Upstash Redis database
 
 1. Sign in at [upstash.com](https://upstash.com) and create a **Redis**
    database (free tier is plenty).
@@ -71,7 +61,7 @@ All free.
    - `UPSTASH_REDIS_REST_URL`
    - `UPSTASH_REDIS_REST_TOKEN`
 
-### 4. Configure GitHub Actions secrets
+### 3. Configure GitHub Actions secrets
 
 In your repository: **Settings → Secrets and variables → Actions → New
 repository secret**. Add:
@@ -82,14 +72,77 @@ repository secret**. Add:
 | `UPSTASH_REDIS_REST_URL` | Upstash REST URL |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token |
 
-### 5. Deploy the web app on Vercel
+### 4. Deploy the web app on Vercel
 
 1. Import this repository into Vercel (framework: Next.js, defaults are fine).
-2. Add the same three variables under **Settings → Environment Variables**
-   (for Production and Preview).
-3. Deploy.
+2. Add these variables under **Settings → Environment Variables** (for
+   Production and Preview):
 
-### 6. Use it
+   | Variable | Value |
+   | --- | --- |
+   | `TELEGRAM_BOT_TOKEN` | your bot token (used to reply with your `chat_id`) |
+   | `TELEGRAM_WEBHOOK_SECRET` | a random string using only `A-Z a-z 0-9 _ -` (1–256 chars) |
+   | `UPSTASH_REDIS_REST_URL` | Upstash REST URL |
+   | `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token |
+
+3. Deploy, and note your production domain (for example
+   `https://stockalert.vercel.app`).
+
+> **Deployment Protection:** if you enable Vercel Password Protection or Vercel
+> Authentication, Telegram's webhook calls are blocked and the bot will not
+> reply. Add a protection bypass for `/api/telegram/webhook`, or keep that path
+> publicly reachable.
+
+### 5. Register the Telegram webhook (one-time)
+
+Point Telegram at your deployed endpoint. Replace `<TOKEN>` and
+`<WEBHOOK_SECRET>` (the same value you set in Vercel) and use your production
+domain:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://<your-vercel-domain>/api/telegram/webhook",
+    "secret_token": "<WEBHOOK_SECRET>",
+    "allowed_updates": ["message"]
+  }'
+```
+
+Confirm it registered with:
+
+```bash
+curl "https://api.telegram.org/bot<TOKEN>/getWebhookInfo"
+```
+
+The scheduled worker only calls `sendMessage`, so the webhook does not conflict
+with monitoring.
+
+### 6. Get your chat_id
+
+1. Open Telegram and send your bot any message (for example `hi`).
+2. The bot replies with your **chat_id** — copy it; you will paste it in the
+   form.
+
+A `chat_id` is per chat. To notify several people/chats, repeat this for each
+one and register each `chat_id` with its own product.
+
+<details>
+<summary>Fallback: read the chat_id manually</summary>
+
+Webhooks and `getUpdates` are mutually exclusive, so remove the webhook first,
+send your bot a message, then read the updates:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TOKEN>/deleteWebhook"
+```
+
+Then open `https://api.telegram.org/bot<TOKEN>/getUpdates` in a browser and find
+`"chat":{"id":123456789,...}` — that number is your `chat_id`.
+
+</details>
+
+### 7. Use it
 
 1. Open your Vercel URL.
 2. Paste a product URL (e.g.
@@ -135,9 +188,12 @@ npm run worker
 
 ## Security and privacy
 
-- **Secrets** (`TELEGRAM_BOT_TOKEN`, Upstash credentials) live only in GitHub
-  secrets and Vercel environment variables. `.env.example` contains empty
-  placeholders; real values are never committed.
+- **Secrets** (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, Upstash
+  credentials) live only in GitHub secrets and Vercel environment variables.
+  `.env.example` contains empty placeholders; real values are never committed.
+- **Webhook authentication:** the Telegram webhook only acts on requests that
+  carry the configured `TELEGRAM_WEBHOOK_SECRET`, so third parties cannot make
+  the bot send messages through it.
 - **Tracked data** (product URLs and `chat_id`s) lives in an Upstash Redis
   database, **not** in the repository, so a public repository does not expose
   who is watching what.

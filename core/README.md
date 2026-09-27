@@ -14,6 +14,7 @@ GitHub Actions worker, so behaviour and types can never drift between them.
 | `detectors/` | Pluggable detector framework: contract, registry, `jsonld`, `htmlSelector`, optional `playwright`. |
 | `storage/` | `ProductStore` contract, Upstash Redis adapter, in-memory adapter. |
 | `telegram.ts` | Telegram Bot API `sendMessage` client, message builder, notifier adapter. |
+| `telegram-incoming.ts` | Parses inbound webhook updates and replies with the sender's `chat_id` (used by `/api/telegram/webhook`). |
 | `logging.ts` | Minimal logger with secret redaction. |
 | `config.ts` | Worker environment validation (fails fast on missing variables). |
 | `monitor/` | State machine, notifier contract, and the monitoring run. |
