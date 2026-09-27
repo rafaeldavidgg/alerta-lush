@@ -1,0 +1,38 @@
+name: Stock monitor
+
+on:
+  # Every 15 minutes (UTC). NOTE: GitHub scheduled workflows are best-effort:
+  # they can be delayed under load, and GitHub disables them after ~60 days of
+  # repository inactivity. If monitoring stops, push any commit or run the
+  # workflow manually to re-enable the schedule.
+  schedule:
+    - cron: '*/15 * * * *'
+  # Manual trigger for testing or recovery.
+  workflow_dispatch:
+
+# Never let two runs overlap (they would double-notify).
+concurrency:
+  group: stock-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run monitoring pass
+        run: npm run worker
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
