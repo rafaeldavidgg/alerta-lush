@@ -1,5 +1,5 @@
 {
-  "name": "stockalert",
+  "name": "stockalert-telegram",
   "version": "0.1.0",
   "private": true,
   "description": "Monitor online product availability and get a Telegram alert the moment a product is restocked.",

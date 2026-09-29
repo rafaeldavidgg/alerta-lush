@@ -86,7 +86,7 @@ repository secret**. Add:
    | `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token |
 
 3. Deploy, and note your production domain (for example
-   `https://stockalert.vercel.app`).
+   `https://stockalert-telegram.vercel.app`).
 
 > **Deployment Protection:** if you enable Vercel Password Protection or Vercel
 > Authentication, Telegram's webhook calls are blocked and the bot will not
