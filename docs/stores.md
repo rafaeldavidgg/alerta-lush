@@ -31,6 +31,11 @@ Register it in `stores/index.ts`:
 export const stores: StoreConfig[] = [lushStore, exampleShopStore, myShopStore];
 ```
 
+The new store then appears **automatically** in the "Tiendas soportadas"
+section of the web UI and in `GET /api/stores` — no UI change is needed.
+The web list is derived from `listVisibleStores()`, which exposes every
+registered store except those marked as demo (see below).
+
 ## 2. Choose strategies
 
 Strategies are evaluated in order; the first one that returns a determined
@@ -69,4 +74,19 @@ expect(result.state).toBe('in_stock');
 ```
 
 `stores/example-shop.ts` exists purely as this worked example — copy it as your
-starting point.
+starting point. Note that it is marked `demo: true`:
+
+```ts
+export const exampleShopStore: StoreConfig = {
+  domain: 'example-shop.test',
+  name: 'Example Shop',
+  demo: true, // fixture-only: evaluated by the monitor, hidden from the web UI
+  strategies: [/* ... */],
+};
+```
+
+Set `demo: true` on any entry that is only a fixture, test, or documentation
+example. Demo stores are still evaluated by the monitoring worker, but they
+are excluded from the user-facing supported-stores catalog (`GET
+/api/stores` and the "Tiendas soportadas" section). Real stores omit the
+flag and surface automatically.

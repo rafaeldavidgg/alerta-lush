@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Reportar una vulnerabilidad
+    url: https://github.com/rafaeldavidgg/stockalert-telegram/security/advisories/new
+    about: No abras una issue pública para problemas de seguridad. Usa este canal privado.
+  - name: 💬 Pregunta de uso
+    url: https://github.com/rafaeldavidgg/stockalert-telegram/discussions/new
+    about: Si solo tienes una duda de configuración o uso, usa las discusiones (si están activadas) o revisa el README.

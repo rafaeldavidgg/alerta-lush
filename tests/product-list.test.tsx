@@ -28,10 +28,7 @@ describe('ProductList', () => {
 
   it('falls back to the URL when there is no label', () => {
     render(
-      <ProductList
-        products={[{ ...product, etiqueta: undefined }]}
-        onDelete={() => undefined}
-      />,
+      <ProductList products={[{ ...product, etiqueta: undefined }]} onDelete={() => undefined} />,
     );
     expect(
       screen.getByRole('link', { name: 'https://www.lush.com/es/es/p/silvery-moon-soap' }),
@@ -48,6 +45,40 @@ describe('ProductList', () => {
 
   it('shows an empty state', () => {
     render(<ProductList products={[]} onDelete={() => undefined} />);
-    expect(screen.getByText(/no vigilas ningún producto/i)).toBeInTheDocument();
+    const empty = screen.getByText(/no vigilas ningún producto/i);
+    expect(empty).toBeInTheDocument();
+    expect(empty).toHaveAttribute('role', 'status');
+  });
+
+  it('announces removals through a live region', () => {
+    const { rerender } = render(<ProductList products={[product]} onDelete={() => undefined} />);
+    expect(screen.queryByText(/producto eliminado/i)).not.toBeInTheDocument();
+
+    rerender(<ProductList products={[]} onDelete={() => undefined} />);
+    expect(screen.getByText(/no vigilas ningún producto/i)).toHaveAttribute('role', 'status');
+  });
+
+  it('announces removals when the list shrinks but is not empty', async () => {
+    const second: PublicTrackedProduct = {
+      ...product,
+      id: 'p2',
+      etiqueta: 'Segundo',
+    };
+    const { rerender } = render(
+      <ProductList products={[product, second]} onDelete={() => undefined} />,
+    );
+    rerender(<ProductList products={[second]} onDelete={() => undefined} />);
+
+    const notice = await screen.findByText(/producto eliminado/i);
+    expect(notice).toHaveAttribute('role', 'status');
+    expect(screen.queryByText('Silvery Moon')).not.toBeInTheDocument();
+  });
+
+  it('keeps an accessible name on every delete button', async () => {
+    const onDelete = vi.fn();
+    render(<ProductList products={[product]} onDelete={onDelete} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Eliminar Silvery Moon' }));
+    expect(onDelete).toHaveBeenCalledWith('p1');
   });
 });

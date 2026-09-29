@@ -1,0 +1,30 @@
+name: ✨ Idea / mejora
+description: Propón una funcionalidad, una tienda nueva o una mejora de documentación.
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por proponer. **No incluyas secretos** ni datos personales.
+  - type: textarea
+    id: problema
+    attributes:
+      label: ¿Qué problema resuelve?
+      description: Descríbelo con un ejemplo concreto si puedes.
+      placeholder: 'Quiero vigilar productos de MiTienda, que hoy no está soportada...'
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+      description: Qué debería hacer StockAlert y, si aplica, cómo (tienda, estrategia de detección, cambios en la UI...).
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+      description: Otras opciones que valoraste.
+    validations:
+      required: false

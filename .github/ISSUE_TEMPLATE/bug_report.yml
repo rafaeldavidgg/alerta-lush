@@ -1,0 +1,41 @@
+name: 🐛 Error
+description: Reporta un error para que podamos reproducirlo y corregirlo.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar. **No incluyas secretos** (tokens, `TELEGRAM_WEBHOOK_SECRET`, credenciales de Upstash) ni `chat_id`s reales.
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducirlo
+      description: Qué hiciste, paso a paso.
+      placeholder: |
+        1. Desplegué en Vercel con...
+        2. Registré el producto https://...
+        3. Ejecuté `npm run worker` y vi...
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamiento esperado
+      description: Qué esperabas que pasara.
+    validations:
+      required: true
+  - type: textarea
+    id: obtenido
+    attributes:
+      label: Comportamiento obtenido
+      description: Qué pasó en su lugar (mensaje de error, logs sin secretos, capturas).
+    validations:
+      required: true
+  - type: input
+    id: entorno
+    attributes:
+      label: Entorno
+      description: Node, SO, commit o despliegue (Vercel / local / GitHub Actions).
+      placeholder: 'Node 22, Windows 11, commit abc1234, GitHub Actions'
+    validations:
+      required: false

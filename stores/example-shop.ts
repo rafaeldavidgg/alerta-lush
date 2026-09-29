@@ -8,6 +8,9 @@ import type { StoreConfig } from '@stores/types';
 export const exampleShopStore: StoreConfig = {
   domain: 'example-shop.test',
   name: 'Example Shop',
+  // Fixture-only store: evaluated by the monitor in tests, never shown
+  // in the user-facing supported-stores catalog.
+  demo: true,
   strategies: [
     {
       type: 'htmlSelector',

@@ -10,6 +10,11 @@ export interface StoreConfig {
   domain: string;
   /** Human-readable store name. */
   name: string;
+  /**
+   * Demo/fixture entries (tests, docs) are evaluated by the monitor but
+   * excluded from the user-facing store catalog. Real stores omit this.
+   */
+  demo?: boolean;
   /** Ordered strategies; the first determined result wins. */
   strategies: DetectorStrategyConfig[];
 }

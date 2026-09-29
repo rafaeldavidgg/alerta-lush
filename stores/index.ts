@@ -13,6 +13,23 @@ export function listStores(): StoreConfig[] {
   return [...stores];
 }
 
+/** A store entry safe to show in the user-facing supported-stores catalog. */
+export interface VisibleStore {
+  domain: string;
+  name: string;
+}
+
+/**
+ * User-facing store catalog: real stores only, demo/fixture entries
+ * excluded. The web UI renders this, so adding a real store entry
+ * publishes it automatically with no UI change.
+ */
+export function listVisibleStores(): VisibleStore[] {
+  return stores
+    .filter((store) => !store.demo)
+    .map((store) => ({ domain: store.domain, name: store.name }));
+}
+
 /**
  * Find the store definition for a host. Never throws: an unknown host simply
  * returns `undefined`, and callers treat that as `unknown` availability.
