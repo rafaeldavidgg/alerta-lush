@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { validateRegistration } from '@core/validation';
+import { BOT_URL, BOT_USERNAME } from '@/lib/bot';
 
 export interface ProductFormValues {
   url: string;
@@ -112,7 +113,13 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
         <div className="help" id="chat-id-help">
           <p>¿Cómo consigo mi chat_id?</p>
           <ol>
-            <li>Abre tu bot en Telegram y envíale cualquier mensaje.</li>
+            <li>
+              Abre el bot{' '}
+              <a href={BOT_URL} target="_blank" rel="noreferrer">
+                @{BOT_USERNAME}
+              </a>{' '}
+              en Telegram y envíale cualquier mensaje.
+            </li>
             <li>El bot te responde con tu chat_id (un número).</li>
             <li>Copia ese número y pégalo en este campo.</li>
           </ol>

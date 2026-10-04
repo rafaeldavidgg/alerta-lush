@@ -8,6 +8,7 @@ import type { PublicTrackedProduct } from '@core/types';
 const product: PublicTrackedProduct = {
   id: 'p1',
   url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
+  chat_id: '123456789',
   etiqueta: 'Silvery Moon',
   tienda: 'Lush',
   estado_actual: 'out_of_stock',
@@ -23,6 +24,7 @@ describe('ProductList', () => {
     expect(screen.getByText('Silvery Moon')).toBeInTheDocument();
     expect(screen.getByText(/Lush/)).toBeInTheDocument();
     expect(screen.getByText('No disponible')).toBeInTheDocument();
+    expect(screen.getByText(/Avisará al chat 123456789/)).toBeInTheDocument();
     expect(screen.getByText(/Sin comprobar/i)).toBeInTheDocument();
   });
 
