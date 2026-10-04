@@ -160,6 +160,7 @@ El worker programado solo usa `sendMessage`, así que el webhook no interfiere c
 
 Un `chat_id` es por chat. Para avisar a varias personas o chats, repite este paso con cada una y registra cada `chat_id` con su propio producto.
 
+<!-- markdownlint-disable MD033 -->
 <details>
 <summary>Alternativa: leer el chat_id manualmente</summary>
 
@@ -174,6 +175,7 @@ Después abre `https://api.telegram.org/bot<TOKEN>/getUpdates` en el navegador y
 Si eliminaste el webhook, vuelve a registrarlo con el paso 5 cuando termines.
 
 </details>
+<!-- markdownlint-enable MD033 -->
 
 ### 7. Usarlo
 

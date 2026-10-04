@@ -10,7 +10,7 @@ export interface ProductListProps {
 }
 
 /** List of tracked products with their store, state, and last verification. */
-export function ProductList({ products, onDelete }: ProductListProps) {
+export function ProductList({ products, onDelete }: Readonly<ProductListProps>) {
   const [removedNotice, setRemovedNotice] = useState(false);
   const prevCount = useRef(products.length);
 
@@ -22,18 +22,18 @@ export function ProductList({ products, onDelete }: ProductListProps) {
 
   if (products.length === 0) {
     return (
-      <p className="meta" role="status">
+      <output className="meta">
         Todavía no vigilas ningún producto.
-      </p>
+      </output>
     );
   }
 
   return (
     <>
       {removedNotice ? (
-        <p className="meta" role="status">
+        <output className="meta">
           Producto eliminado.
-        </p>
+        </output>
       ) : null}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {products.map((product) => (

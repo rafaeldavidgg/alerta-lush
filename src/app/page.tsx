@@ -74,9 +74,9 @@ export default function HomePage() {
       <section className="card">
         <h2 style={{ marginTop: 0 }}>Productos vigilados</h2>
         {loading ? (
-          <p className="meta" role="status">
+          <output className="meta">
             Cargando…
-          </p>
+          </output>
         ) : null}
         {error ? (
           <p className="error" role="alert">

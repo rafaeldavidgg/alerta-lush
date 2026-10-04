@@ -123,6 +123,11 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+output.status,
+output.meta {
+  display: block;
+}
+
 .product {
   display: flex;
   justify-content: space-between;

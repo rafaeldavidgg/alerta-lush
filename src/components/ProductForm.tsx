@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { validateRegistration } from '@core/validation';
 import { BOT_URL, BOT_USERNAME } from '@/lib/bot';
 
@@ -16,7 +16,7 @@ export interface ProductFormProps {
 
 function describedBy(...ids: Array<string | false | null | undefined>): string | undefined {
   const joined = ids.filter(Boolean).join(' ');
-  return joined ? joined : undefined;
+  return joined || undefined;
 }
 
 /**
@@ -24,7 +24,7 @@ function describedBy(...ids: Array<string | false | null | undefined>): string |
  * blocking validation error. Validates locally with the same rules as the
  * API so the two can never drift.
  */
-export function ProductForm({ onSubmit }: ProductFormProps) {
+export function ProductForm({ onSubmit }: Readonly<ProductFormProps>) {
   const [url, setUrl] = useState('');
   const [chatId, setChatId] = useState('');
   const [etiqueta, setEtiqueta] = useState('');
@@ -35,7 +35,7 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
   const urlRef = useRef<HTMLInputElement>(null);
   const chatIdRef = useRef<HTMLInputElement>(null);
   const etiquetaRef = useRef<HTMLInputElement>(null);
-  const statusRef = useRef<HTMLParagraphElement>(null);
+  const statusRef = useRef<HTMLOutputElement>(null);
 
   // Move focus to the outcome message so keyboard and screen-reader users
   // are notified of the registration result.
@@ -43,7 +43,7 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
     if (status) statusRef.current?.focus();
   }, [status]);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const result = validateRegistration({ url, chat_id: chatId, etiqueta });
     if (!result.ok) {
@@ -155,9 +155,9 @@ export function ProductForm({ onSubmit }: ProductFormProps) {
         {submitting ? 'Añadiendo…' : 'Añadir producto'}
       </button>
       {status ? (
-        <p className="status" role="status" ref={statusRef} tabIndex={-1}>
+        <output className="status" ref={statusRef} tabIndex={-1}>
           {status}
-        </p>
+        </output>
       ) : null}
     </form>
   );

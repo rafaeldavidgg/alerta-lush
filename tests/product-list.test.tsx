@@ -49,7 +49,8 @@ describe('ProductList', () => {
     render(<ProductList products={[]} onDelete={() => undefined} />);
     const empty = screen.getByText(/no vigilas ningún producto/i);
     expect(empty).toBeInTheDocument();
-    expect(empty).toHaveAttribute('role', 'status');
+    expect(empty.tagName).toBe('OUTPUT');
+    expect(screen.getByRole('status')).toBe(empty);
   });
 
   it('announces removals through a live region', () => {
@@ -57,7 +58,9 @@ describe('ProductList', () => {
     expect(screen.queryByText(/producto eliminado/i)).not.toBeInTheDocument();
 
     rerender(<ProductList products={[]} onDelete={() => undefined} />);
-    expect(screen.getByText(/no vigilas ningún producto/i)).toHaveAttribute('role', 'status');
+    const emptyState = screen.getByText(/no vigilas ningún producto/i);
+    expect(emptyState.tagName).toBe('OUTPUT');
+    expect(screen.getByRole('status')).toBe(emptyState);
   });
 
   it('announces removals when the list shrinks but is not empty', async () => {
@@ -72,7 +75,8 @@ describe('ProductList', () => {
     rerender(<ProductList products={[second]} onDelete={() => undefined} />);
 
     const notice = await screen.findByText(/producto eliminado/i);
-    expect(notice).toHaveAttribute('role', 'status');
+    expect(notice.tagName).toBe('OUTPUT');
+    expect(screen.getByRole('status')).toBe(notice);
     expect(screen.queryByText('Silvery Moon')).not.toBeInTheDocument();
   });
 
