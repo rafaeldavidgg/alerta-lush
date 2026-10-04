@@ -20,6 +20,7 @@
     "worker": "tsx src/worker/index.ts"
   },
   "dependencies": {
+    "@upstash/qstash": "^2.12.0",
     "@upstash/redis": "^1.39.0",
     "axios": "^1.20.0",
     "cheerio": "^1.2.0",

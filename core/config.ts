@@ -12,6 +12,16 @@ export interface TelegramWebhookConfig {
   webhookSecret: string;
 }
 
+export interface CronConfig {
+  telegramBotToken: string;
+  storeBackend: StoreBackend;
+  /** Bearer secret for manual calls and schedulers without signing. */
+  cronSecret?: string;
+  /** QStash signing keys for request-signature verification. */
+  qstashCurrentSigningKey?: string;
+  qstashNextSigningKey?: string;
+}
+
 function readBackend(env: Env): StoreBackend {
   const raw = (env.ALERTA_STORE_BACKEND ?? env.STOCKALERT_STORE_BACKEND ?? '')
     .trim()
@@ -74,5 +84,54 @@ export function loadTelegramWebhookConfig(env: Env = process.env): TelegramWebho
   return {
     telegramBotToken: telegramBotToken as string,
     webhookSecret: webhookSecret as string,
+  };
+}
+
+/**
+ * Load and validate the cron-trigger configuration used by the QStash-driven
+ * monitoring endpoint. Requires the worker credentials (Telegram token plus
+ * the store backend) and at least one scheduler credential: either a bearer
+ * `CRON_SECRET` (manual calls, simple schedulers) or a QStash signing key
+ * (signature verification).
+ */
+export function loadCronConfig(env: Env = process.env): CronConfig {
+  const errors: string[] = [];
+
+  const telegramBotToken = env.TELEGRAM_BOT_TOKEN?.trim();
+  if (!telegramBotToken) errors.push('TELEGRAM_BOT_TOKEN is required');
+
+  const storeBackend = readBackend(env);
+  if (storeBackend === 'upstash') {
+    if (!env.UPSTASH_REDIS_REST_URL?.trim()) {
+      errors.push(
+        'UPSTASH_REDIS_REST_URL is required (or set ALERTA_STORE_BACKEND=memory for local runs)',
+      );
+    }
+    if (!env.UPSTASH_REDIS_REST_TOKEN?.trim()) {
+      errors.push(
+        'UPSTASH_REDIS_REST_TOKEN is required (or set ALERTA_STORE_BACKEND=memory for local runs)',
+      );
+    }
+  }
+
+  const cronSecret = env.CRON_SECRET?.trim() || undefined;
+  const qstashCurrentSigningKey = env.QSTASH_CURRENT_SIGNING_KEY?.trim() || undefined;
+  const qstashNextSigningKey = env.QSTASH_NEXT_SIGNING_KEY?.trim() || undefined;
+  if (!cronSecret && !qstashCurrentSigningKey) {
+    errors.push(
+      'CRON_SECRET or QSTASH_CURRENT_SIGNING_KEY is required (configure at least one scheduler credential)',
+    );
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Invalid configuration:\n- ${errors.join('\n- ')}`);
+  }
+
+  return {
+    telegramBotToken: telegramBotToken as string,
+    storeBackend,
+    cronSecret,
+    qstashCurrentSigningKey,
+    qstashNextSigningKey,
   };
 }

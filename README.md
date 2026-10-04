@@ -4,11 +4,11 @@ Vigila la disponibilidad de productos de **Lush** y recibe un **mensaje de Teleg
 
 Pega la URL de un producto de Lush que esté agotado y Alerta Lush la revisará cada 15 minutos para avisarte cuando vuelva a estar disponible (cuando el botón `No disponible` pasa a ser `Añadir a la cesta`).
 
-Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHub Actions** (planificador) + **Upstash Redis** (almacenamiento compartido) + **Telegram Bot API** (notificaciones). Coste total: 0 €.
+Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **Upstash QStash** (planificador con reintentos) + **Upstash Redis** (almacenamiento compartido) + **Telegram Bot API** (notificaciones). Coste total: 0 €. GitHub Actions queda como respaldo manual.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-cada_15_min-2088FF?logo=github-actions&logoColor=white)](.github/workflows/monitor.yml)
+[![QStash](https://img.shields.io/badge/QStash-cada_15_min-00C17C)](https://upstash.com/docs/qstash/schedules)
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
 
 > Interfaz y documentación en español. Proyecto personal sin afiliación con Lush. Si usas este proyecto, una estrella en GitHub se agradece.
@@ -23,7 +23,7 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 - [Instalación](#instalación)
   - [1. Crear el bot de Telegram](#1-crear-el-bot-de-telegram)
   - [2. Crear la base de datos Redis en Upstash](#2-crear-la-base-de-datos-redis-en-upstash)
-  - [3. Configurar los secrets de GitHub Actions](#3-configurar-los-secrets-de-github-actions)
+  - [3. Crear el schedule de QStash](#3-crear-el-schedule-de-qstash-planificador-principal)
   - [4. Desplegar la aplicación web en Vercel](#4-desplegar-la-aplicación-web-en-vercel)
   - [5. Registrar el webhook de Telegram (una sola vez)](#5-registrar-el-webhook-de-telegram-una-sola-vez)
   - [6. Obtener tu chat_id](#6-obtener-tu-chat_id)
@@ -43,7 +43,7 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 ## Características
 
 - **Exclusivo Lush**: solo acepta URLs de `lush.com`. Cualquier otra URL se rechaza con un error claro, sin guardarse.
-- **Monitorización cada 15 minutos** mediante GitHub Actions, sin servidores que mantener.
+- **Monitorización cada 15 minutos** mediante QStash (con reintentos y firma de peticiones), sin servidores que mantener. GitHub Actions queda como respaldo manual.
 - **Alertas por Telegram** solo en la transición `sin stock → en stock`. Sin spam ni duplicados.
 - **Detección fija Lush**: primero Schema.org JSON-LD y, como respaldo, texto del botón (`Añadir a la cesta` / `No disponible`).
 - **Sin falsos positivos**: los errores de red o anti-bots (`403`/`429`/timeouts) se registran como `desconocido` y nunca notifican.
@@ -56,8 +56,8 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 
 ```text
 ┌──────────────┐  registrar   ┌───────────────┐  cada 15 min   ┌──────────────┐
-│ App Next.js  │ ───────────▶ │ Upstash Redis │ ◀────────────── │ GH Actions   │
-│ (Vercel)     │              │ (estado común)│                │ worker       │
+│ App Next.js  │ ──────────▶ │ Upstash Redis  │ ◀──────────── │ QStash       │
+│ (Vercel)     │              │ (estado común)│                │ schedule     │
 └──────────────┘              └───────────────┘                └──────┬───────┘
                                                                       │ descargar + detectar
                                                                       ▼
@@ -67,7 +67,7 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 ```
 
 1. La aplicación web guarda los productos de Lush vigilados en Upstash Redis.
-2. Un job de GitHub Actions los lee, comprueba cada producto una vez y actualiza el estado guardado.
+2. Un schedule de QStash llama cada 15 minutos a `POST /api/cron/monitor` (petición firmada, con reintentos). El endpoint ejecuta la misma pasada de monitorización que `npm run worker`: comprueba cada producto una vez y actualiza el estado guardado.
 3. Solo la transición `sin stock → en stock` envía un mensaje de Telegram. La primera observación solo fija la referencia inicial y el estado `desconocido` (fallos de red/anti-bots) nunca notifica.
 
 La detección es fija para Lush: JSON-LD de Schema.org y, si no hay datos utilizables, el texto del botón del producto.
@@ -76,11 +76,11 @@ La detección es fija para Lush: JSON-LD de Schema.org y, si no hay datos utiliz
 
 ## Requisitos
 
-- Una cuenta de [GitHub](https://github.com) (gratuita).
+- Una cuenta de [GitHub](https://github.com) (gratuita, para el repo y el respaldo manual).
 - Una cuenta de [Vercel](https://vercel.com) (plan Hobby gratuito).
-- Una cuenta de [Upstash](https://upstash.com) (nivel gratuito suficiente).
+- Una cuenta de [Upstash](https://upstash.com) (nivel gratuito suficiente: Redis + QStash).
 - Telegram y una cuenta para hablar con [@BotFather](https://t.me/BotFather).
-- [Node.js](https://nodejs.org/) **20 o superior** y `npm` (solo para desarrollo local o para ejecutar el worker fuera de Actions).
+- [Node.js](https://nodejs.org/) **20 o superior** y `npm` (solo para desarrollo local o para ejecutar el worker manualmente).
 
 > No necesitas clonar el repo para usar Alerta Lush una vez desplegado: basta con la URL de tu despliegue en Vercel. Clónalo solo si quieres tu propia instancia o contribuir.
 
@@ -103,29 +103,54 @@ Tiempo estimado: unos 15 minutos. Necesitarás tener a mano el token del bot, la
    - `UPSTASH_REDIS_REST_URL`
    - `UPSTASH_REDIS_REST_TOKEN`
 
-### 3. Configurar los secrets de GitHub Actions
+### 3. Crear el schedule de QStash (planificador principal)
 
-Haz un fork de este repositorio (o usa tu clon) y ve a **Settings → Secrets and variables → Actions → New repository secret**. Añade:
+QStash llama cada 15 minutos a `POST /api/cron/monitor` con una petición firmada y reintentos automáticos. Necesitarás el dominio de producción de Vercel (paso 4): puedes crear el schedule justo después de desplegar. También necesitas un secreto para las llamadas manuales y las claves de firma de QStash:
 
-| Secret                     | Valor                 |
-| -------------------------- | --------------------- |
-| `TELEGRAM_BOT_TOKEN`       | Token de tu bot       |
-| `UPSTASH_REDIS_REST_URL`   | URL REST de Upstash   |
-| `UPSTASH_REDIS_REST_TOKEN` | Token REST de Upstash |
+1. Genera un `CRON_SECRET` (cadena aleatoria de al menos 16 caracteres).
+2. En la consola de Upstash, ve a **QStash → Settings → Request signing keys** y copia `QSTASH_CURRENT_SIGNING_KEY` (y `QSTASH_NEXT_SIGNING_KEY` si existe).
+3. En **QStash → Schedules → Create schedule**, configura:
+   - **Destination URL:** `https://<tu-dominio-vercel>/api/cron/monitor`
+   - **Schedule (cron):** `*/15 * * * *`
+   - **Retries:** `3`
+4. Alternativa por API (sustituye `<QSTASH_TOKEN>` por tu token de QStash):
 
-Sin estos tres secrets, el workflow programado (`.github/workflows/monitor.yml`) fallará.
+```bash
+curl -X POST "https://qstash.upstash.io/v2/schedules/https://<tu-dominio-vercel>/api/cron/monitor" \
+  -H "Authorization: Bearer <QSTASH_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -H "Upstash-Cron: */15 * * * *" \
+  -H "Upstash-Retries: 3" \
+  -d '{}'
+```
+
+Para lanzar una pasada manualmente sin esperar al schedule:
+
+```bash
+curl -X POST "https://<tu-dominio-vercel>/api/cron/monitor" \
+  -H "Authorization: Bearer <CRON_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Sin credenciales válidas el endpoint responde `401` y no ejecuta nada.
+
+> **Respaldo con GitHub Actions:** el workflow `.github/workflows/monitor.yml` conserva el trigger manual (`workflow_dispatch`) para emergencias, con su `schedule` desactivado. Si lo usas como respaldo, configura en **Settings → Secrets and variables → Actions** los secrets `TELEGRAM_BOT_TOKEN`, `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN`.
 
 ### 4. Desplegar la aplicación web en Vercel
 
 1. Importa tu repositorio en Vercel (framework: Next.js, los valores por defecto valen).
 2. En **Settings → Environment Variables** añade estas variables (para Production y Preview):
 
-   | Variable                   | Valor                                                             |
-   | -------------------------- | ----------------------------------------------------------------- |
-   | `TELEGRAM_BOT_TOKEN`       | Token de tu bot (se usa para responderte con tu `chat_id`)        |
-   | `TELEGRAM_WEBHOOK_SECRET`  | Cadena aleatoria usando solo `A-Z a-z 0-9 _ -` (1–256 caracteres) |
-   | `UPSTASH_REDIS_REST_URL`   | URL REST de Upstash                                               |
-   | `UPSTASH_REDIS_REST_TOKEN` | Token REST de Upstash                                             |
+   | Variable                   | Valor                                                                              |
+   | -------------------------- | ---------------------------------------------------------------------------------- |
+   | `TELEGRAM_BOT_TOKEN`       | Token de tu bot (se usa para responderte con tu `chat_id`)                         |
+   | `TELEGRAM_WEBHOOK_SECRET`  | Cadena aleatoria usando solo `A-Z a-z 0-9 _ -` (1–256 caracteres)                  |
+   | `UPSTASH_REDIS_REST_URL`   | URL REST de Upstash                                                                |
+   | `UPSTASH_REDIS_REST_TOKEN` | Token REST de Upstash                                                              |
+   | `CRON_SECRET`              | Secreto para lanzar pasadas manualmente (`Authorization: Bearer …`, mín. 16 chars) |
+   | `QSTASH_CURRENT_SIGNING_KEY`| Clave de firma de QStash (Settings → Request signing keys)                        |
+   | `QSTASH_NEXT_SIGNING_KEY`  | Clave de firma secundaria de QStash (opcional, para rotaciones)                    |
 
 3. Despliega y anota tu dominio de producción (por ejemplo `https://alertalush.vercel.app`).
 
@@ -226,7 +251,7 @@ Copia `.env.example` a `.env.local` y nunca subas valores reales: `.env`, `.env.
 | `npm test`          | Ejecuta la suite de pruebas (Vitest).                         |
 | `npm run typecheck` | Comprobación de tipos con TypeScript.                         |
 | `npm run lint`      | Linter (ESLint).                                              |
-| `npm run worker`    | Ejecuta una pasada de monitorización (lo usa GitHub Actions). |
+| `npm run worker`    | Ejecuta una pasada de monitorización (respaldo manual/local; el planificador principal es QStash → `POST /api/cron/monitor`). |
 
 Antes de abrir un PR, se recomienda ejecutar `npm test`, `npm run typecheck` y `npm run lint`.
 
@@ -239,15 +264,16 @@ src/
   app/            # App Next.js (formulario, API, webhook de Telegram)
   components/     # Componentes React
   lib/            # Utilidades compartidas
-  worker/         # Pasada de monitorización (la ejecuta GitHub Actions)
+  worker/         # Pasada de monitorización (la ejecuta QStash vía /api/cron/monitor; Actions queda como respaldo)
 core/
+  cron-auth.ts    # Autenticación del endpoint programado (firma QStash o bearer CRON_SECRET)
   detectors/      # Detección de disponibilidad (JSON-LD + botón, fijos para Lush)
   lush-detector.ts# Constantes Lush: dominio, textos y cadena de detección
   monitor/        # Lógica de comparación de estados
   storage/        # Backend Upstash / en memoria
 tests/            # Pruebas (Vitest)
 .github/
-  workflows/      # Workflow programado cada 15 min
+  workflows/      # Workflow de respaldo manual (el schedule está desactivado; el planificador es QStash)
 ```
 
 ---
@@ -262,8 +288,9 @@ Si usaste una versión anterior que aceptaba otras tiendas, los productos antigu
 
 ## Seguridad y privacidad
 
-- **Secretos** (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, credenciales de Upstash) solo viven en los secrets de GitHub y en las variables de entorno de Vercel. `.env.example` solo contiene marcadores vacíos; nunca se suben valores reales.
+- **Secretos** (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, claves de firma de QStash, credenciales de Upstash) solo viven en las variables de entorno de Vercel (y `QSTASH_TOKEN` solo donde crees el schedule). Los secrets de GitHub solo se necesitan si usas el workflow de respaldo. `.env.example` solo contiene marcadores vacíos; nunca se suban valores reales.
 - **Autenticación del webhook:** el webhook de Telegram solo actúa ante peticiones que traen el `TELEGRAM_WEBHOOK_SECRET` configurado, así que terceros no pueden usarlo para enviar mensajes con tu bot.
+- **Autenticación del endpoint programado:** `/api/cron/monitor` solo ejecuta la pasada ante una firma QStash válida o un `CRON_SECRET` válido; sin credenciales responde `401` sin tocar nada.
 - **Datos vigilados** (URLs de productos y `chat_id`s) viven en tu base de datos Redis de Upstash, **no** en el repositorio. Que el repositorio sea público no expone qué vigila quién.
 - **Limitación del formulario público:** el formulario web no está autenticado. Quien encuentre tu URL de Vercel podría registrar productos (el bot solo puede escribir a chats que lo hayan iniciado, lo que limita el abuso). Además, la lista de productos muestra el `chat_id` de cada alerta a cualquiera que abra la página, para que varios usuarios distingan sus avisos. Para un despliegue personal, activa la **protección con contraseña de Vercel** o mantén privada la URL del despliegue. Si necesitas una garantía estricta, añade un secreto compartido a las rutas de la API.
 - **Avisos de seguridad:** consulta [SECURITY.md](SECURITY.md). No abras issues públicas con secretos o datos sensibles.
@@ -275,7 +302,8 @@ Si usaste una versión anterior que aceptaba otras tiendas, los productos antigu
 - Se envía un `User-Agent` identificable de tipo navegador, con una petición por producto y ejecución (más reintentos acotados ante `403`/`429`/`5xx`).
 - Los `403`/`429`/timeouts se registran como `desconocido` y nunca como un falso «en stock».
 - Las notificaciones son **como máximo una vez**: un fallo de Telegram se registra y no se reintenta, para no enviar duplicados.
-- Matiz del planificador de GitHub: el cron es de mejor esfuerzo y se pausa tras ~60 días de inactividad del repositorio (ver el comentario en `.github/workflows/monitor.yml`). Si la monitorización se detiene, haz cualquier push o ejecuta el workflow manualmente para reactivar la programación.
+- Planificador QStash con reintentos y firma: si una entrega falla, QStash reintenta con backoff (la pasada es idempotente y no duplica avisos). Los logs de cada ejecución están en Vercel (**Logs**) y en la consola de QStash (**Schedules → Logs/DLQ**).
+- GitHub Actions queda solo como respaldo manual (`workflow_dispatch` en `.github/workflows/monitor.yml`); su `schedule` está desactivado porque el cron de GitHub es de mejor esfuerzo y se pausa tras ~60 días de inactividad del repositorio.
 
 ---
 
@@ -284,9 +312,10 @@ Si usaste una versión anterior que aceptaba otras tiendas, los productos antigu
 | Síntoma                             | Causa probable                                            | Qué hacer                                                                                                   |
 | ----------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | El bot no responde con el `chat_id` | Webhook no registrado o protección de Vercel bloqueándolo | Revisa el paso 5 con `getWebhookInfo`; excluye `/api/telegram/webhook` de la protección                     |
-| El workflow de Actions falla        | Faltan secrets                                            | Comprueba `TELEGRAM_BOT_TOKEN`, `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en Settings → Secrets |
-| Nunca llega ninguna alerta          | El producto sigue agotado o el estado es `desconocido`    | Espera un ciclo completo (~15 min); revisa los logs del workflow                                            |
-| La monitorización se detuvo sola    | GitHub pausó el cron por inactividad                      | Haz un push o lanza el workflow manualmente con `workflow_dispatch`                                         |
+| El endpoint cron responde `401`     | Falta `CRON_SECRET` o la firma QStash no verifica         | Comprueba `CRON_SECRET` y `QSTASH_*_SIGNING_KEY` en Vercel; revisa que el schedule apunte al dominio actual |
+| El endpoint cron responde `500`     | Falta configuración (`cron not configured`)               | Comprueba `TELEGRAM_BOT_TOKEN`, credenciales de Upstash y al menos un secreto del scheduler en Vercel       |
+| Nunca llega ninguna alerta          | El producto sigue agotado o el estado es `desconocido`    | Espera un ciclo completo (~15 min); revisa los logs en Vercel y en QStash (Schedules → Logs/DLQ)            |
+| La monitorización se detuvo sola    | Schedule de QStash pausado o eliminado                    | Revisa QStash → Schedules; como respaldo, lanza el workflow manualmente con `workflow_dispatch`              |
 | `403`/`429` frecuentes              | Anti-bots de la tienda                                    | No es un error de configuración: queda como `desconocido` y se reintenta en el siguiente ciclo              |
 | Error «Solo se vigilan URLs…»       | URL que no es de `lush.com`                               | Pega la URL del producto en `lush.com`; otras tiendas no están soportadas                                   |
 
