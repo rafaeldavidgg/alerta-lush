@@ -18,7 +18,7 @@ export function isAvailabilityState(value: unknown): value is AvailabilityState 
 }
 
 /**
- * A product the user asked StockAlert to watch.
+ * A product the user asked Alerta Lush to watch.
  *
  * Field names intentionally match the project's data model
  * (`id, url, chat_id, etiqueta, tienda, estado_actual, estado_anterior,

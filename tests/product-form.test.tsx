@@ -31,7 +31,22 @@ describe('ProductForm', () => {
     await userEvent.type(screen.getByLabelText(/chat_id/i), '123456');
     await userEvent.click(screen.getByRole('button', { name: /añadir producto/i }));
 
-    expect(await screen.findByText(/absolute http/i)).toBeInTheDocument();
+    expect(await screen.findByText(/absoluta/i)).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('rejects a non-Lush URL with a blocking error', async () => {
+    const onSubmit = vi.fn();
+    render(<ProductForm onSubmit={onSubmit} />);
+
+    await userEvent.type(
+      screen.getByLabelText(/URL del producto/i),
+      'https://www.otra-tienda.com/producto/123',
+    );
+    await userEvent.type(screen.getByLabelText(/chat_id/i), '123456');
+    await userEvent.click(screen.getByRole('button', { name: /añadir producto/i }));
+
+    expect(await screen.findByText(/Solo se vigilan URLs/i)).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -45,7 +60,7 @@ describe('ProductForm', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: /añadir producto/i }));
 
-    expect(await screen.findByText(/chat_id is required/i)).toBeInTheDocument();
+    expect(await screen.findByText(/obligatorio/i)).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -68,7 +83,7 @@ describe('ProductForm', () => {
     const describedBy = input.getAttribute('aria-describedby') ?? '';
     expect(describedBy).toMatch(/chat-id-help/);
     expect(describedBy).toMatch(/chat-id-error/);
-    const error = await screen.findByText(/chat_id is required/i);
+    const error = await screen.findByText(/obligatorio/i);
     expect(error).toHaveAttribute('role', 'alert');
   });
 
@@ -87,36 +102,19 @@ describe('ProductForm', () => {
     await waitFor(() => expect(document.activeElement).toBe(status));
   });
 
-  it('warns about unsupported stores without blocking submission', async () => {
-    const onSubmit = vi.fn();
-    render(
-      <ProductForm onSubmit={onSubmit} supportedStores={[{ domain: 'lush.com', name: 'Lush' }]} />,
-    );
+  it('moves focus to the first invalid field on a blocking error', async () => {
+    render(<ProductForm onSubmit={() => undefined} />);
 
     await userEvent.type(
       screen.getByLabelText(/URL del producto/i),
-      'https://tienda-desconocida.example/p/1',
+      'https://www.otra-tienda.com/producto/123',
     );
     await userEvent.type(screen.getByLabelText(/chat_id/i), '123456');
     await userEvent.click(screen.getByRole('button', { name: /añadir producto/i }));
 
-    expect(await screen.findAllByText(/aún no está soportada/i)).not.toHaveLength(0);
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
-    expect(await screen.findAllByText(/quedará como «Desconocido»/i)).not.toHaveLength(0);
-  });
-
-  it('shows no store warning while the catalog is still loading', async () => {
-    const onSubmit = vi.fn();
-    render(<ProductForm onSubmit={onSubmit} supportedStores={[]} />);
-
-    await userEvent.type(
-      screen.getByLabelText(/URL del producto/i),
-      'https://tienda-desconocida.example/p/1',
+    await screen.findByText(/Solo se vigilan URLs/i);
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText(/URL del producto/i)),
     );
-    await userEvent.type(screen.getByLabelText(/chat_id/i), '123456');
-    await userEvent.click(screen.getByRole('button', { name: /añadir producto/i }));
-
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
-    expect(screen.queryByText(/aún no está soportada/i)).not.toBeInTheDocument();
   });
 });

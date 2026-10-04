@@ -11,7 +11,7 @@ function product(overrides: Partial<TrackedProduct> = {}): TrackedProduct {
     url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
     chat_id: '111',
     etiqueta: 'Silvery Moon',
-    tienda: 'lush.com',
+    tienda: 'Lush',
     estado_actual: 'in_stock',
     estado_anterior: 'in_stock',
     ultima_verificacion: '2026-01-01T00:00:00.000Z',
@@ -76,6 +76,7 @@ describe('createTelegramNotifier', () => {
 
     expect(sent).toHaveLength(2);
     expect(sent[0]!.chatId).toBe('111');
+    expect(sent[0]!.text).toContain('Alerta Lush');
     expect(sent[0]!.text).toContain('Silvery Moon');
     expect(sent[0]!.text).toContain('https://www.lush.com/es/es/p/silvery-moon-soap');
     expect(sent[1]!.chatId).toBe('222');

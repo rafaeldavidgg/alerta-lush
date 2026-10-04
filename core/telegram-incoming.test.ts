@@ -63,6 +63,7 @@ describe('buildChatIdReply', () => {
     expect(text).toContain('123456');
     expect(text).toContain('chat_id');
     expect(text.toLowerCase()).toContain('formulario');
+    expect(text).toContain('Alerta Lush');
   });
 });
 

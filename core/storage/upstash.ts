@@ -83,7 +83,7 @@ export function createUpstashStoreFromEnv(env: Env = process.env): ProductStore 
   if (!url || !token) {
     throw new Error(
       'Missing UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN. ' +
-        'Set them in the environment, or use STOCKALERT_STORE_BACKEND=memory for local development.',
+        'Set them in the environment, or use ALERTA_STORE_BACKEND=memory for local development.',
     );
   }
   return createUpstashStore(new Redis({ url, token }));

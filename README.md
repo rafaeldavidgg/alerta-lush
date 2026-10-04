@@ -1,8 +1,8 @@
-# StockAlert
+# Alerta Lush
 
-Vigila la disponibilidad de productos en tiendas online y recibe un **mensaje de Telegram en cuanto un producto vuelve a estar en stock**.
+Vigila la disponibilidad de productos de **Lush** y recibe un **mensaje de Telegram en cuanto un producto vuelve a estar en stock**.
 
-Pega la URL de un producto que esté agotado y StockAlert la revisará cada 15 minutos para avisarte cuando vuelva a estar disponible (en Lush: cuando el botón `No disponible` pasa a ser `Añadir a la cesta`).
+Pega la URL de un producto de Lush que esté agotado y Alerta Lush la revisará cada 15 minutos para avisarte cuando vuelva a estar disponible (cuando el botón `No disponible` pasa a ser `Añadir a la cesta`).
 
 Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHub Actions** (planificador) + **Upstash Redis** (almacenamiento compartido) + **Telegram Bot API** (notificaciones). Coste total: 0 €.
 
@@ -11,7 +11,7 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-cada_15_min-2088FF?logo=github-actions&logoColor=white)](.github/workflows/monitor.yml)
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
 
-> Interfaz y documentación en español. Si usas este proyecto, una estrella en GitHub se agradece.
+> Interfaz y documentación en español. Proyecto personal sin afiliación con Lush. Si usas este proyecto, una estrella en GitHub se agradece.
 
 ---
 
@@ -31,7 +31,7 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 - [Desarrollo local](#desarrollo-local)
 - [Scripts disponibles](#scripts-disponibles)
 - [Estructura del proyecto](#estructura-del-proyecto)
-- [Añadir una tienda](#añadir-una-tienda)
+- [Solo Lush](#solo-lush)
 - [Seguridad y privacidad](#seguridad-y-privacidad)
 - [Robustez y limitaciones](#robustez-y-limitaciones)
 - [Solución de problemas](#solución-de-problemas)
@@ -42,12 +42,13 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 
 ## Características
 
+- **Exclusivo Lush**: solo acepta URLs de `lush.com`. Cualquier otra URL se rechaza con un error claro, sin guardarse.
 - **Monitorización cada 15 minutos** mediante GitHub Actions, sin servidores que mantener.
 - **Alertas por Telegram** solo en la transición `sin stock → en stock`. Sin spam ni duplicados.
-- **Detección conectable por tienda**: primero Schema.org JSON-LD y, como respaldo, texto del botón. Lush viene configurado de serie.
+- **Detección fija Lush**: primero Schema.org JSON-LD y, como respaldo, texto del botón (`Añadir a la cesta` / `No disponible`).
 - **Sin falsos positivos**: los errores de red o anti-bots (`403`/`429`/timeouts) se registran como `desconocido` y nunca notifican.
 - **Coste cero** con los niveles gratuitos de Vercel, GitHub, Upstash y Telegram.
-- **Interfaz en español**, sencilla: URL + `chat_id` + etiqueta opcional.
+- **Interfaz en español**, sencilla: URL de Lush + `chat_id` + etiqueta opcional.
 
 ---
 
@@ -58,18 +59,18 @@ Todo funciona con planes gratuitos: **Vercel Hobby** (aplicación web) + **GitHu
 │ App Next.js  │ ───────────▶ │ Upstash Redis │ ◀────────────── │ GH Actions   │
 │ (Vercel)     │              │ (estado común)│                │ worker       │
 └──────────────┘              └───────────────┘                └──────┬───────┘
-                                                                     │ descargar + detectar
-                                                                     ▼
-                                                                ┌──────────┐
-                                                                │ Telegram │
-                                                                └──────────┘
+                                                                      │ descargar + detectar
+                                                                      ▼
+                                                                 ┌──────────┐
+                                                                 │ Telegram │
+                                                                 └──────────┘
 ```
 
-1. La aplicación web guarda los productos vigilados en Upstash Redis.
+1. La aplicación web guarda los productos de Lush vigilados en Upstash Redis.
 2. Un job de GitHub Actions los lee, comprueba cada producto una vez y actualiza el estado guardado.
 3. Solo la transición `sin stock → en stock` envía un mensaje de Telegram. La primera observación solo fija la referencia inicial y el estado `desconocido` (fallos de red/anti-bots) nunca notifica.
 
-La detección de disponibilidad es **conectable por tienda**: consulta [`docs/stores.md`](docs/stores.md). Lush viene configurado (primero JSON-LD de Schema.org, con respaldo en el texto del botón).
+La detección es fija para Lush: JSON-LD de Schema.org y, si no hay datos utilizables, el texto del botón del producto.
 
 ---
 
@@ -81,7 +82,7 @@ La detección de disponibilidad es **conectable por tienda**: consulta [`docs/st
 - Telegram y una cuenta para hablar con [@BotFather](https://t.me/BotFather).
 - [Node.js](https://nodejs.org/) **20 o superior** y `npm` (solo para desarrollo local o para ejecutar el worker fuera de Actions).
 
-> No necesitas clonar el repo para usar StockAlert una vez desplegado: basta con la URL de tu despliegue en Vercel. Clónalo solo si quieres tu propia instancia o contribuir.
+> No necesitas clonar el repo para usar Alerta Lush una vez desplegado: basta con la URL de tu despliegue en Vercel. Clónalo solo si quieres tu propia instancia o contribuir.
 
 ---
 
@@ -126,7 +127,7 @@ Sin estos tres secrets, el workflow programado (`.github/workflows/monitor.yml`)
    | `UPSTASH_REDIS_REST_URL`   | URL REST de Upstash                                               |
    | `UPSTASH_REDIS_REST_TOKEN` | Token REST de Upstash                                             |
 
-3. Despliega y anota tu dominio de producción (por ejemplo `https://stockalert-telegram.vercel.app`).
+3. Despliega y anota tu dominio de producción (por ejemplo `https://alertalush.vercel.app`).
 
 > **Protección de despliegue:** si activas la protección con contraseña o la autenticación de Vercel, las llamadas del webhook de Telegram se bloquean y el bot no responderá. Añade una excepción para `/api/telegram/webhook` o mantén esa ruta accesible públicamente.
 
@@ -177,7 +178,7 @@ Si eliminaste el webhook, vuelve a registrarlo con el paso 5 cuando termines.
 ### 7. Usarlo
 
 1. Abre tu URL de Vercel.
-2. Pega la URL del producto (p. ej. `https://www.lush.com/es/es/p/silvery-moon-soap`), tu `chat_id` y una etiqueta opcional.
+2. Pega la URL del producto de Lush (p. ej. `https://www.lush.com/es/es/p/silvery-moon-soap`), tu `chat_id` y una etiqueta opcional.
 3. Añádelo. La siguiente ejecución programada (en ~15 minutos) registrará su estado; cuando se reponga recibirás un mensaje de Telegram.
 
 Para dejar de vigilar un producto, elimínalo desde la lista de la propia aplicación.
@@ -198,17 +199,17 @@ Para trabajar en local sin Upstash, usa el backend en memoria:
 
 ```bash
 # PowerShell
-$env:STOCKALERT_STORE_BACKEND = "memory"
+$env:ALERTA_STORE_BACKEND = "memory"
 $env:TELEGRAM_BOT_TOKEN = "dummy"
 npm run worker
 ```
 
 ```bash
 # Bash (Linux/macOS)
-STOCKALERT_STORE_BACKEND=memory TELEGRAM_BOT_TOKEN=dummy npm run worker
+ALERTA_STORE_BACKEND=memory TELEGRAM_BOT_TOKEN=dummy npm run worker
 ```
 
-> El backend en memoria no persiste entre peticiones serverless; solo sirve para desarrollo local y pruebas.
+> La variable antigua `STOCKALERT_STORE_BACKEND` sigue funcionando como alternativa. El backend en memoria no persiste entre peticiones serverless; solo sirve para desarrollo local y pruebas.
 
 Copia `.env.example` a `.env.local` y nunca subas valores reales: `.env`, `.env.local` y `.env.*.local` ya están ignorados en `.gitignore`. Los valores reales solo viven en los secrets de GitHub y en las variables de entorno de Vercel.
 
@@ -238,28 +239,22 @@ src/
   lib/            # Utilidades compartidas
   worker/         # Pasada de monitorización (la ejecuta GitHub Actions)
 core/
-  detectors/      # Estrategias de detección de disponibilidad
+  detectors/      # Detección de disponibilidad (JSON-LD + botón, fijos para Lush)
+  lush-detector.ts# Constantes Lush: dominio, textos y cadena de detección
   monitor/        # Lógica de comparación de estados
   storage/        # Backend Upstash / en memoria
-stores/           # Configuración por tienda (Lush + ejemplo)
 tests/            # Pruebas (Vitest)
-docs/
-  stores.md       # Cómo añadir una tienda
 .github/
   workflows/      # Workflow programado cada 15 min
 ```
 
 ---
 
-## Añadir una tienda
+## Solo Lush
 
-StockAlert trae una tienda (**Lush**). Añadir otra no requiere tocar el núcleo de monitorización, solo la configuración. Resumen:
+Alerta Lush vigila exclusivamente productos de `lush.com` (incluidos subdominios como `www.lush.com`). Las URLs de cualquier otra tienda se rechazan en el formulario y en la API con un error del tipo «Solo se vigilan URLs de lush.com» y no se guardan.
 
-1. Crea `stores/mi-tienda.ts` con un `StoreConfig` (`jsonld` primero y `htmlSelector` como respaldo, lo habitual).
-2. Regístrala en `stores/index.ts`.
-3. Añade una prueba con un fixture HTML bajo `stores/__fixtures__/`.
-
-Guía completa (en inglés): [`docs/stores.md`](docs/stores.md). `stores/example-shop.ts` es un ejemplo funcional listo para copiar.
+Si usaste una versión anterior que aceptaba otras tiendas, los productos antiguos de esas tiendas se conservan en tu Redis sin borrarse, pero ya no generan avisos. Puedes eliminarlos desde la lista de la propia aplicación.
 
 ---
 
@@ -291,6 +286,7 @@ Guía completa (en inglés): [`docs/stores.md`](docs/stores.md). `stores/example
 | Nunca llega ninguna alerta          | El producto sigue agotado o el estado es `desconocido`    | Espera un ciclo completo (~15 min); revisa los logs del workflow                                            |
 | La monitorización se detuvo sola    | GitHub pausó el cron por inactividad                      | Haz un push o lanza el workflow manualmente con `workflow_dispatch`                                         |
 | `403`/`429` frecuentes              | Anti-bots de la tienda                                    | No es un error de configuración: queda como `desconocido` y se reintenta en el siguiente ciclo              |
+| Error «Solo se vigilan URLs…»       | URL que no es de `lush.com`                               | Pega la URL del producto en `lush.com`; otras tiendas no están soportadas                                   |
 
 ¿Encontraste otro error? Abre una issue con los pasos para reproducirlo, lo esperado frente a lo obtenido y los logs relevantes **sin secretos** (consulta las [plantillas de issues](.github/ISSUE_TEMPLATE/)).
 

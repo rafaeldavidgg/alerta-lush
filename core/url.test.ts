@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { getRegistrableDomain, parseProductUrl } from '@core/url';
 
 describe('parseProductUrl', () => {
-  it('accepts a valid Lush product URL and derives the store', () => {
+  it('accepts a valid Lush product URL and fixes the store to Lush', () => {
     const result = parseProductUrl('https://www.lush.com/es/es/p/silvery-moon-soap');
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.tienda).toBe('lush.com');
+    expect(result.tienda).toBe('Lush');
     expect(result.host).toBe('www.lush.com');
     expect(result.url).toBe('https://www.lush.com/es/es/p/silvery-moon-soap');
   });
@@ -15,7 +15,7 @@ describe('parseProductUrl', () => {
     const result = parseProductUrl('not-a-url');
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error).toMatch(/absolute/i);
+    expect(result.error).toMatch(/absoluta/i);
   });
 
   it('rejects a non-http scheme', () => {
@@ -30,11 +30,16 @@ describe('parseProductUrl', () => {
     expect(parseProductUrl(undefined).ok).toBe(false);
   });
 
-  it('handles a subdomain host with a multi-part suffix', () => {
+  it('rejects a non-Lush URL', () => {
     const result = parseProductUrl('https://shop.example.co.uk/products/soap');
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.tienda).toBe('example.co.uk');
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toMatch(/lush\.com/i);
+  });
+
+  it('rejects a lookalike domain', () => {
+    const result = parseProductUrl('https://lush.com.evil.com/p/1');
+    expect(result.ok).toBe(false);
   });
 });
 

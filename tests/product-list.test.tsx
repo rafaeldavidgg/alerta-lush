@@ -9,7 +9,7 @@ const product: PublicTrackedProduct = {
   id: 'p1',
   url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
   etiqueta: 'Silvery Moon',
-  tienda: 'lush.com',
+  tienda: 'Lush',
   estado_actual: 'out_of_stock',
   estado_anterior: 'out_of_stock',
   ultima_verificacion: null,
@@ -21,7 +21,7 @@ describe('ProductList', () => {
     render(<ProductList products={[product]} onDelete={() => undefined} />);
 
     expect(screen.getByText('Silvery Moon')).toBeInTheDocument();
-    expect(screen.getByText(/lush\.com/)).toBeInTheDocument();
+    expect(screen.getByText(/Lush/)).toBeInTheDocument();
     expect(screen.getByText('No disponible')).toBeInTheDocument();
     expect(screen.getByText(/Sin comprobar/i)).toBeInTheDocument();
   });

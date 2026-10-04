@@ -6,11 +6,15 @@ import { createUpstashStoreFromEnv } from '@core/storage/upstash';
 /**
  * Resolve the configured shared store.
  *
- * `STOCKALERT_STORE_BACKEND=memory` selects the in-memory adapter for local
- * development and tests; otherwise Upstash Redis is used.
+ * `ALERTA_STORE_BACKEND=memory` selects the in-memory adapter for local
+ * development and tests; otherwise Upstash Redis is used. The legacy
+ * `STOCKALERT_STORE_BACKEND` is still honored as a fallback.
  */
 export function getProductStore(env: Env = process.env): ProductStore {
-  if (env.STOCKALERT_STORE_BACKEND?.trim().toLowerCase() === 'memory') {
+  const raw = (env.ALERTA_STORE_BACKEND ?? env.STOCKALERT_STORE_BACKEND ?? '')
+    .trim()
+    .toLowerCase();
+  if (raw === 'memory') {
     return getMemoryStore();
   }
   return createUpstashStoreFromEnv(env);

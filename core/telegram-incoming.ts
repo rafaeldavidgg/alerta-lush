@@ -2,7 +2,7 @@ import type { Logger } from '@core/logging';
 import type { TelegramSender } from '@core/telegram';
 
 /**
- * Minimal shape of a Telegram Bot API update. Only the fields StockAlert reads
+ * Minimal shape of a Telegram Bot API update. Only the fields Alerta Lush reads
  * are typed; everything else is ignored.
  */
 export interface TelegramUpdate {
@@ -48,7 +48,7 @@ export function buildChatIdReply(chatId: string): string {
     '',
     chatId,
     '',
-    'Cópialo en el campo «chat_id» del formulario de StockAlert para recibir los avisos.',
+    'Cópialo en el campo «chat_id» del formulario de Alerta Lush para recibir los avisos.',
   ].join('\n');
 }
 

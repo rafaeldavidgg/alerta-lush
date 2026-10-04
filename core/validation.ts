@@ -32,9 +32,9 @@ export function validateRegistration(input: RegistrationInput): RegistrationResu
 
   const rawChatId = typeof input.chat_id === 'string' ? input.chat_id.trim() : '';
   if (rawChatId === '') {
-    errors.chat_id = 'chat_id is required';
+    errors.chat_id = 'El chat_id es obligatorio';
   } else if (!/^-?\d+$/.test(rawChatId)) {
-    errors.chat_id = 'chat_id must be numeric';
+    errors.chat_id = 'El chat_id debe ser numérico';
   }
 
   let etiqueta: string | undefined;
@@ -42,7 +42,7 @@ export function validateRegistration(input: RegistrationInput): RegistrationResu
     const trimmed = input.etiqueta.trim();
     if (trimmed.length > 0) etiqueta = trimmed;
   } else if (input.etiqueta !== undefined && input.etiqueta !== null) {
-    errors.etiqueta = 'etiqueta must be a string';
+    errors.etiqueta = 'La etiqueta debe ser un texto';
   }
 
   if (Object.keys(errors).length > 0 || !parsed.ok) {

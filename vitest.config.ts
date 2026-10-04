@@ -12,7 +12,6 @@ export default defineConfig({
     setupFiles: ['vitest.setup.ts'],
     include: [
       'core/**/*.test.ts',
-      'stores/**/*.test.ts',
       'tests/**/*.test.ts',
       'tests/**/*.test.tsx',
     ],

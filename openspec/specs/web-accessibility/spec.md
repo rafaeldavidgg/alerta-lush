@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Hace que la interfaz web de StockAlert sea usable con lector de pantalla, teclado y preferencia de movimiento reducido, anunciando errores, estados y cambios de forma programática y sin depender solo del color.
+Hace que la interfaz web de Alerta Lush sea usable con lector de pantalla, teclado y preferencia de movimiento reducido, anunciando errores, estados y cambios de forma programática y sin depender solo del color.
 
 ## Requirements
 

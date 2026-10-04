@@ -6,12 +6,12 @@ GitHub Actions worker, so behaviour and types can never drift between them.
 | Module | Responsibility |
 | --- | --- |
 | `types.ts` | `TrackedProduct`, `AvailabilityState` (`in_stock` \| `out_of_stock` \| `unknown`). |
-| `url.ts` | URL validation and store-domain derivation (`www.lush.com` → `lush.com`). |
+| `url.ts` | Validación de URLs: solo se aceptan URLs de `lush.com`. |
 | `validation.ts` | Registration validation shared by the API and the web form. |
 | `http.ts` | Minimal `HttpGet`/`HttpPost` abstractions plus axios-backed defaults and browser-like headers. |
 | `fetch.ts` | Product fetcher: one request per call, bounded retries/backoff on 403/429/5xx, timeout, never throws. |
-| `evaluate.ts` | Resolves the store configuration and runs its detector strategies. |
-| `detectors/` | Pluggable detector framework: contract, registry, `jsonld`, `htmlSelector`, optional `playwright`. |
+| `evaluate.ts` | Evaluates Lush availability with the fixed chain (JSON-LD, then button text). |
+| `detectors/` | Detector framework: contract, registry, `jsonld` and `htmlSelector` strategies. |
 | `storage/` | `ProductStore` contract, Upstash Redis adapter, in-memory adapter. |
 | `telegram.ts` | Telegram Bot API `sendMessage` client, message builder, notifier adapter. |
 | `telegram-incoming.ts` | Parses inbound webhook updates and replies with the sender's `chat_id` (used by `/api/telegram/webhook`). |

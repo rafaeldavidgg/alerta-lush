@@ -1,42 +1,49 @@
 import type { AvailabilityState } from '@core/types';
 import { runStrategies, type DetectorStrategyType } from '@core/detectors';
-import { getStoreForUrl } from '@stores/index';
+import { LUSH_DOMAIN, LUSH_STRATEGIES, isLushHost } from '@core/lush-detector';
 
 export interface AvailabilityEvaluation {
   state: AvailabilityState;
-  /** The store domain whose configuration was used, when one matched. */
+  /** Siempre `lush.com` cuando la URL es Lush; ausente en otro caso. */
   store?: string;
   /** The strategy that determined the state, if any. */
   strategy?: DetectorStrategyType;
   reason?: string;
 }
 
+function extractHost(url: string): string | null {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Evaluate availability for a product URL against the configured store.
+ * Evaluate availability exclusively for Lush.
  *
- * An unconfigured store yields `unknown` (and therefore no notification).
- * Strategy errors are surfaced as `unknown` rather than thrown, so one bad
- * store cannot abort a run.
+ * Non-Lush URLs yield `unknown` (and therefore no notification).
+ * Strategy errors are surfaced as `unknown` rather than thrown.
  */
 export async function evaluateAvailability(
   url: string,
   html: string,
 ): Promise<AvailabilityEvaluation> {
-  const store = getStoreForUrl(url);
-  if (!store) {
-    return { state: 'unknown', reason: `no store configuration matches ${url}` };
+  const host = extractHost(url);
+  if (!host || !isLushHost(host)) {
+    return { state: 'unknown', reason: `non-Lush URL: ${url}` };
   }
 
   try {
-    const result = await runStrategies(store.strategies, { url, html });
+    const result = await runStrategies(LUSH_STRATEGIES, { url, html });
     return {
       state: result.state,
-      store: store.domain,
+      store: LUSH_DOMAIN,
       strategy: result.strategy,
       reason: result.reason,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return { state: 'unknown', store: store.domain, reason: `detector error: ${message}` };
+    return { state: 'unknown', store: LUSH_DOMAIN, reason: `detector error: ${message}` };
   }
 }

@@ -1,5 +1,5 @@
 name: ✨ Idea / mejora
-description: Propón una funcionalidad, una tienda nueva o una mejora de documentación.
+description: Propón una funcionalidad o una mejora de documentación.
 labels: ['enhancement']
 body:
   - type: markdown
@@ -11,14 +11,14 @@ body:
     attributes:
       label: ¿Qué problema resuelve?
       description: Descríbelo con un ejemplo concreto si puedes.
-      placeholder: 'Quiero vigilar productos de MiTienda, que hoy no está soportada...'
+      placeholder: 'Quiero que el aviso incluya la talla del producto...'
     validations:
       required: true
   - type: textarea
     id: propuesta
     attributes:
       label: Propuesta
-      description: Qué debería hacer StockAlert y, si aplica, cómo (tienda, estrategia de detección, cambios en la UI...).
+      description: Qué debería hacer Alerta Lush y, si aplica, cómo (detección, cambios en la UI...).
     validations:
       required: true
   - type: textarea

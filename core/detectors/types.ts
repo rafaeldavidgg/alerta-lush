@@ -8,21 +8,12 @@ export type DetectorStrategyConfig =
   | { type: 'jsonld' }
   | {
       type: 'htmlSelector';
-      /** CSS selector, e.g. `button.add-to-cart` or `[data-testid="add-to-basket"]`. */
+      /** CSS selector, e.g. `button`. */
       selector: string;
       /** Text that means the product is available. */
       inStockText: string;
       /** Text that means the product is unavailable. */
       outOfStockText: string;
-    }
-  | {
-      type: 'playwright';
-      /** When to consider navigation finished. Defaults to `domcontentloaded`. */
-      waitUntil?: 'load' | 'domcontentloaded' | 'networkidle';
-      /** Optional selector to wait for before reading the DOM. */
-      waitForSelector?: string;
-      /** Strategies evaluated against the rendered HTML, in order. */
-      strategies: DetectorStrategyConfig[];
     };
 
 export type DetectorStrategyType = DetectorStrategyConfig['type'];
