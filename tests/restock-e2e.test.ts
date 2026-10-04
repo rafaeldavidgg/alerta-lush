@@ -20,7 +20,7 @@ describe('end-to-end restock scenario', () => {
       url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
       chat_id: '999',
       etiqueta: 'Silvery Moon',
-      tienda: 'lush.com',
+      tienda: 'Lush',
     });
     await store.update(created.id, {
       estado_actual: 'out_of_stock',

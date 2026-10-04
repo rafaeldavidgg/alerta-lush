@@ -9,6 +9,14 @@ describe('loadWorkerConfig', () => {
   it('accepts the memory backend without Upstash credentials', () => {
     const config = loadWorkerConfig({
       TELEGRAM_BOT_TOKEN: 'token',
+      ALERTA_STORE_BACKEND: 'memory',
+    });
+    expect(config.storeBackend).toBe('memory');
+  });
+
+  it('honors the legacy STOCKALERT_STORE_BACKEND as a fallback', () => {
+    const config = loadWorkerConfig({
+      TELEGRAM_BOT_TOKEN: 'token',
       STOCKALERT_STORE_BACKEND: 'memory',
     });
     expect(config.storeBackend).toBe('memory');

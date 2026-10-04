@@ -7,21 +7,21 @@
     </linearGradient>
   </defs>
   <style>
-    .word { fill: #1a1a1a; }
+    .word { fill: #111110; }
     @media (prefers-color-scheme: dark) {
-      .word { fill: #f2f4f7; }
+      .word { fill: #f5f1e8; }
     }
   </style>
   <!-- icon -->
   <svg x="16" y="16" width="144" height="144" viewBox="0 0 512 512">
-    <rect width="512" height="512" rx="116" fill="url(#lbg)"/>
-    <ellipse cx="256" cy="118" rx="220" ry="88" fill="#ffffff" opacity="0.08"/>
-    <circle cx="256" cy="102" r="22" fill="#ffffff"/>
-    <path d="M256 128C185 128 142 178 142 262v60l-38 56c-5 8 0 17 10 17h284c10 0 15-9 10-17l-38-56v-60c0-84-43-134-114-134z" fill="#ffffff"/>
-    <circle cx="256" cy="410" r="26" fill="#ffffff"/>
-    <circle cx="366" cy="150" r="70" fill="#FFB020" stroke="#ffffff" stroke-width="14"/>
-    <path d="M366 106l36 54h-20v36h-32v-36h-20z" fill="#14231B"/>
+    <rect width="512" height="512" rx="116" fill="#111110"/>
+    <circle cx="256" cy="276" r="128" fill="#f5f1e8"/>
+    <path d="M140 262 q40 -34 80 0 t80 0 t80 0" fill="none" stroke="#1f7a4d" stroke-width="26" stroke-linecap="round"/>
+    <circle cx="150" cy="140" r="20" fill="#3ddc84"/>
+    <circle cx="362" cy="132" r="26" fill="#3ddc84"/>
+    <circle cx="384" cy="330" r="15" fill="#3ddc84"/>
+    <circle cx="128" cy="330" r="12" fill="#f5f1e8" opacity="0.55"/>
   </svg>
   <!-- wordmark -->
-  <text x="184" y="112" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="68" font-weight="800" letter-spacing="-1"><tspan class="word">Stock</tspan><tspan fill="#1F7A4D">Alert</tspan></text>
+  <text x="184" y="112" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="62" font-weight="800" letter-spacing="-1"><tspan class="word">Alerta </tspan><tspan fill="#1F7A4D">Lush</tspan></text>
 </svg>

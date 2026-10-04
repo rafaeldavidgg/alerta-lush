@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'StockAlert',
+  title: 'Alerta Lush',
   description:
-    'Vigila la disponibilidad de productos online y recibe un aviso por Telegram cuando vuelven a estar disponibles.',
+    'Vigila la disponibilidad de productos de Lush y recibe un aviso por Telegram cuando vuelven a estar disponibles.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f6f7f9' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f1115' },
+    { media: '(prefers-color-scheme: light)', color: '#faf7f0' },
+    { media: '(prefers-color-scheme: dark)', color: '#0e0d0b' },
   ],
 };
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Lets a user discover their own Telegram `chat_id` by messaging the bot, so they can complete the StockAlert registration form without manually inspecting raw Telegram API output.
+Lets a user discover their own Telegram `chat_id` by messaging the bot, so they can complete the Alerta Lush registration form without manually inspecting raw Telegram API output.
 
 ## Requirements
 

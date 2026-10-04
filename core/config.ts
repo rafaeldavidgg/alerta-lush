@@ -13,7 +13,10 @@ export interface TelegramWebhookConfig {
 }
 
 function readBackend(env: Env): StoreBackend {
-  return env.STOCKALERT_STORE_BACKEND?.trim().toLowerCase() === 'memory' ? 'memory' : 'upstash';
+  const raw = (env.ALERTA_STORE_BACKEND ?? env.STOCKALERT_STORE_BACKEND ?? '')
+    .trim()
+    .toLowerCase();
+  return raw === 'memory' ? 'memory' : 'upstash';
 }
 
 /**
@@ -32,12 +35,12 @@ export function loadWorkerConfig(env: Env = process.env): WorkerConfig {
   if (storeBackend === 'upstash') {
     if (!env.UPSTASH_REDIS_REST_URL?.trim()) {
       errors.push(
-        'UPSTASH_REDIS_REST_URL is required (or set STOCKALERT_STORE_BACKEND=memory for local runs)',
+        'UPSTASH_REDIS_REST_URL is required (or set ALERTA_STORE_BACKEND=memory for local runs)',
       );
     }
     if (!env.UPSTASH_REDIS_REST_TOKEN?.trim()) {
       errors.push(
-        'UPSTASH_REDIS_REST_TOKEN is required (or set STOCKALERT_STORE_BACKEND=memory for local runs)',
+        'UPSTASH_REDIS_REST_TOKEN is required (or set ALERTA_STORE_BACKEND=memory for local runs)',
       );
     }
   }

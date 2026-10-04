@@ -1,8 +1,8 @@
 {
-  "name": "stockalert-telegram",
+  "name": "alerta-lush",
   "version": "0.1.0",
   "private": true,
-  "description": "Monitor online product availability and get a Telegram alert the moment a product is restocked.",
+  "description": "Vigila la disponibilidad de productos de Lush y avisa por Telegram cuando vuelven a estar en stock.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -39,7 +39,6 @@
     "eslint": "^10.11.0",
     "globals": "^17.12.0",
     "jsdom": "^30.1.1",
-    "playwright-core": "^1.63.0",
     "prettier": "^3.6.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",

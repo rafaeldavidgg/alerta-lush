@@ -27,6 +27,10 @@ export interface RunSummary {
 /**
  * Evaluate every tracked product once.
  *
+ * Historic non-Lush products (registered before the Lush-only change) are
+ * kept as-is: they evaluate to `unknown` and never notify. Nothing is
+ * migrated or deleted here.
+ *
  * Guarantees:
  *  - at most one fetch per product (retries are handled inside `fetchHtml`);
  *  - a failure on one product never prevents the others from running;

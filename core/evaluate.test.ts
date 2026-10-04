@@ -4,13 +4,13 @@ import { describe, expect, it } from 'vitest';
 import { evaluateAvailability } from '@core/evaluate';
 
 function fixture(name: string): string {
-  const path = fileURLToPath(new URL(`../core/detectors/__fixtures__/${name}`, import.meta.url));
+  const path = fileURLToPath(new URL(`./detectors/__fixtures__/${name}`, import.meta.url));
   return readFileSync(path, 'utf8');
 }
 
 const LUSH_URL = 'https://www.lush.com/es/es/p/silvery-moon-soap';
 
-describe('built-in Lush store configuration', () => {
+describe('Lush-exclusive availability evaluation', () => {
   it('yields in_stock from the captured in-stock page (JSON-LD)', async () => {
     const result = await evaluateAvailability(LUSH_URL, fixture('lush-in-stock.html'));
     expect(result.state).toBe('in_stock');
@@ -39,11 +39,12 @@ describe('built-in Lush store configuration', () => {
     expect(result.strategy).toBe('htmlSelector');
   });
 
-  it('yields unknown for an unconfigured store', async () => {
+  it('yields unknown for a non-Lush URL without notifying', async () => {
     const result = await evaluateAvailability(
-      'https://unknown-shop.example.org/product/1',
+      'https://www.otra-tienda.com/producto/123',
       fixture('lush-in-stock.html'),
     );
     expect(result.state).toBe('unknown');
+    expect(result.store).toBeUndefined();
   });
 });

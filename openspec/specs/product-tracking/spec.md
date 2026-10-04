@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Lets a user register, view, and remove the online products StockAlert watches, and persists those records in a shared store that both the Vercel-hosted web app and the scheduled monitoring job can read and write.
+Lets a user register, view, and remove the Lush products Alerta Lush watches, and persists those records in a shared store that both the Vercel-hosted web app and the scheduled monitoring job can read and write.
 
 ## Requirements
 

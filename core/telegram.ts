@@ -20,10 +20,10 @@ export interface TelegramSenderOptions {
   logger?: Logger;
 }
 
-/** Build the restock message: the label (or URL) plus the product URL. */
+/** Build the restock message: brand, label (or URL) plus the product URL. */
 export function buildRestockMessage(product: TrackedProduct): string {
   const name = product.etiqueta?.trim() || product.url;
-  return ['🔔 ¡Vuelve a estar disponible!', '', name, product.url].join('\n');
+  return ['🧼 Alerta Lush: ¡Vuelve a estar disponible!', '', name, product.url].join('\n');
 }
 
 /**

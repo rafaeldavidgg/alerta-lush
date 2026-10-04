@@ -18,7 +18,7 @@ async function seedProduct(
   estado: AvailabilityState,
   url = 'https://www.lush.com/es/es/p/silvery-moon-soap',
 ) {
-  const created = await store.create({ url, chat_id: '123', tienda: 'lush.com' });
+  const created = await store.create({ url, chat_id: '123', tienda: 'Lush' });
   await store.update(created.id, { estado_actual: estado, estado_anterior: estado });
   return created.id;
 }

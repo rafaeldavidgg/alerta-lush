@@ -8,7 +8,7 @@ const SAMPLE = {
   url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
   chat_id: '123456789',
   etiqueta: 'Silvery Moon',
-  tienda: 'lush.com',
+  tienda: 'Lush',
 };
 
 function createFakeRedis() {

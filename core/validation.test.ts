@@ -24,7 +24,7 @@ describe('availability state union', () => {
 });
 
 describe('validateRegistration', () => {
-  it('accepts a valid registration and derives the store', () => {
+  it('accepts a valid registration and fixes the store to Lush', () => {
     const result = validateRegistration({
       url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
       chat_id: '123456789',
@@ -32,7 +32,7 @@ describe('validateRegistration', () => {
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.tienda).toBe('lush.com');
+    expect(result.value.tienda).toBe('Lush');
     expect(result.value.chat_id).toBe('123456789');
     expect(result.value.etiqueta).toBe('Jabón Silvery Moon');
   });
@@ -44,6 +44,16 @@ describe('validateRegistration', () => {
     expect(result.errors.url).toBeDefined();
   });
 
+  it('rejects a non-Lush URL without persisting', () => {
+    const result = validateRegistration({
+      url: 'https://www.otra-tienda.com/producto/123',
+      chat_id: '123',
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors.url).toMatch(/lush\.com/i);
+  });
+
   it('rejects an empty chat_id', () => {
     const result = validateRegistration({
       url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
@@ -51,7 +61,7 @@ describe('validateRegistration', () => {
     });
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.errors.chat_id).toMatch(/required/i);
+    expect(result.errors.chat_id).toMatch(/obligatorio/i);
   });
 
   it('rejects a non-numeric chat_id', () => {
@@ -61,7 +71,7 @@ describe('validateRegistration', () => {
     });
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.errors.chat_id).toMatch(/numeric/i);
+    expect(result.errors.chat_id).toMatch(/numérico/i);
   });
 
   it('omits an empty optional label', () => {

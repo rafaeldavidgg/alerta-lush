@@ -31,6 +31,6 @@ async function main(): Promise<void> {
 
 main().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
-  console.error(`StockAlert worker failed: ${message}`);
+  console.error(`Alerta Lush worker failed: ${message}`);
   process.exitCode = 1;
 });

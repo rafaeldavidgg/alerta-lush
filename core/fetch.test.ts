@@ -33,7 +33,7 @@ describe('createProductFetcher', () => {
     const fetchHtml = createProductFetcher(httpGet, options);
     await fetchHtml('https://www.lush.com/p/1');
     const headers = requests[0]!.options.headers;
-    expect(headers['User-Agent']).toContain('StockAlert/');
+    expect(headers['User-Agent']).toContain('AlertaLush/');
     expect(headers['Accept']).toContain('text/html');
     expect(headers['Accept-Language']).toBeTruthy();
   });

@@ -21,7 +21,7 @@ beforeEach(() => {
 });
 
 describe('POST /api/products', () => {
-  it('creates a valid product and derives the store', async () => {
+  it('creates a valid product and fixes the store to Lush', async () => {
     const response = await POST(
       postRequest({
         url: 'https://www.lush.com/es/es/p/silvery-moon-soap',
@@ -32,7 +32,7 @@ describe('POST /api/products', () => {
     expect(response.status).toBe(201);
     const data = (await response.json()) as { product: Record<string, unknown> };
     expect(data.product).toMatchObject({
-      tienda: 'lush.com',
+      tienda: 'Lush',
       estado_actual: 'unknown',
       estado_anterior: 'unknown',
       etiqueta: 'Silvery Moon',
@@ -61,6 +61,18 @@ describe('POST /api/products', () => {
     expect(list.products).toHaveLength(0);
   });
 
+  it('rejects a non-Lush URL with a blocking error and does not persist', async () => {
+    const response = await POST(
+      postRequest({ url: 'https://www.otra-tienda.com/producto/123', chat_id: '123' }),
+    );
+    expect(response.status).toBe(400);
+    const data = (await response.json()) as { errors: Record<string, string> };
+    expect(data.errors.url).toMatch(/lush\.com/i);
+
+    const list = (await (await GET()).json()) as { products: TrackedProduct[] };
+    expect(list.products).toHaveLength(0);
+  });
+
   it('rejects an empty chat_id', async () => {
     const response = await POST(
       postRequest({ url: 'https://www.lush.com/es/es/p/x', chat_id: '' }),
@@ -74,7 +86,7 @@ describe('GET /api/products', () => {
     await POST(postRequest({ url: 'https://www.lush.com/es/es/p/a', chat_id: '1' }));
     const data = (await (await GET()).json()) as { products: TrackedProduct[] };
     expect(data.products).toHaveLength(1);
-    expect(data.products[0]!.tienda).toBe('lush.com');
+    expect(data.products[0]!.tienda).toBe('Lush');
   });
 });
 

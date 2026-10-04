@@ -1,6 +1,6 @@
 # Política de seguridad
 
-Gracias por ayudar a mantener StockAlert seguro. Este documento explica cómo avisar de vulnerabilidades y qué esperar.
+Gracias por ayudar a mantener Alerta Lush seguro. Este documento explica cómo avisar de vulnerabilidades y qué esperar.
 
 ## Versiones compatibles
 

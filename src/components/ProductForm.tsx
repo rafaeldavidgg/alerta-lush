@@ -9,41 +9,8 @@ export interface ProductFormValues {
   etiqueta?: string;
 }
 
-export interface SupportedStoreInfo {
-  domain: string;
-  name: string;
-}
-
 export interface ProductFormProps {
   onSubmit: (values: ProductFormValues) => Promise<void> | void;
-  /**
-   * User-facing store catalog (from GET /api/stores). While it is loading
-   * (`undefined` or empty) no unsupported-store warning is shown.
-   */
-  supportedStores?: SupportedStoreInfo[];
-}
-
-/**
- * Return true when the URL belongs to a supported store, false when it is
- * parseable but matches no catalog entry, and null when support cannot be
- * determined (empty catalog or unparseable URL).
- */
-export function checkStoreSupport(
-  rawUrl: string,
-  supportedStores: SupportedStoreInfo[],
-): boolean | null {
-  if (supportedStores.length === 0) return null;
-  let host: string;
-  try {
-    host = new URL(rawUrl.trim()).hostname.toLowerCase();
-  } catch {
-    return null;
-  }
-  if (!host) return null;
-  const supported = supportedStores.some(
-    (store) => host === store.domain || host.endsWith(`.${store.domain}`),
-  );
-  return supported;
 }
 
 function describedBy(...ids: Array<string | false | null | undefined>): string | undefined {
@@ -52,17 +19,17 @@ function describedBy(...ids: Array<string | false | null | undefined>): string |
 }
 
 /**
- * Registration form. Validates locally with the same rules as the API so the
- * user gets immediate field-level feedback.
+ * Registration form. Only lush.com URLs are accepted; anything else is a
+ * blocking validation error. Validates locally with the same rules as the
+ * API so the two can never drift.
  */
-export function ProductForm({ onSubmit, supportedStores = [] }: ProductFormProps) {
+export function ProductForm({ onSubmit }: ProductFormProps) {
   const [url, setUrl] = useState('');
   const [chatId, setChatId] = useState('');
   const [etiqueta, setEtiqueta] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [storeWarning, setStoreWarning] = useState<string | null>(null);
 
   const urlRef = useRef<HTMLInputElement>(null);
   const chatIdRef = useRef<HTMLInputElement>(null);
@@ -74,16 +41,6 @@ export function ProductForm({ onSubmit, supportedStores = [] }: ProductFormProps
   useEffect(() => {
     if (status) statusRef.current?.focus();
   }, [status]);
-
-  function updateStoreWarning(rawUrl: string): boolean | null {
-    const support = checkStoreSupport(rawUrl, supportedStores);
-    setStoreWarning(
-      support === false
-        ? 'Esta tienda aún no está soportada: el producto se guardará, pero quedará como «Desconocido» y no recibirás avisos hasta que se añada soporte.'
-        : null,
-    );
-    return support;
-  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -99,7 +56,6 @@ export function ProductForm({ onSubmit, supportedStores = [] }: ProductFormProps
     }
 
     setErrors({});
-    const support = updateStoreWarning(result.value.url);
     setSubmitting(true);
     try {
       await onSubmit({
@@ -110,11 +66,7 @@ export function ProductForm({ onSubmit, supportedStores = [] }: ProductFormProps
       setUrl('');
       setChatId('');
       setEtiqueta('');
-      setStatus(
-        support === false
-          ? 'Producto añadido. Ten en cuenta que su tienda aún no está soportada: quedará como «Desconocido» hasta que se añada soporte.'
-          : 'Producto añadido. Se vigilará en la próxima ejecución.',
-      );
+      setStatus('Producto añadido. Se vigilará en la próxima ejecución.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'No se pudo guardar el producto.');
     } finally {
@@ -134,21 +86,12 @@ export function ProductForm({ onSubmit, supportedStores = [] }: ProductFormProps
           placeholder="https://www.lush.com/es/es/p/silvery-moon-soap"
           value={url}
           aria-invalid={errors.url ? true : undefined}
-          aria-describedby={describedBy(errors.url && 'url-error', storeWarning && 'store-warning')}
-          onChange={(event) => {
-            setUrl(event.target.value);
-            if (storeWarning) updateStoreWarning(event.target.value);
-          }}
-          onBlur={(event) => updateStoreWarning(event.target.value)}
+          aria-describedby={describedBy(errors.url && 'url-error')}
+          onChange={(event) => setUrl(event.target.value)}
         />
         {errors.url ? (
           <span className="error" id="url-error" role="alert">
             {errors.url}
-          </span>
-        ) : null}
-        {storeWarning && !errors.url ? (
-          <span className="warning" id="store-warning" role="alert">
-            {storeWarning}
           </span>
         ) : null}
       </div>
@@ -173,6 +116,7 @@ export function ProductForm({ onSubmit, supportedStores = [] }: ProductFormProps
             <li>El bot te responde con tu chat_id (un número).</li>
             <li>Copia ese número y pégalo en este campo.</li>
           </ol>
+          <p>Solo se vigilan productos de Lush (lush.com).</p>
         </div>
         {errors.chat_id ? (
           <span className="error" id="chat-id-error" role="alert">

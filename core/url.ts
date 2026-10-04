@@ -1,6 +1,8 @@
 /**
- * URL validation and store-domain derivation.
+ * URL validation for Alerta Lush: only lush.com URLs are accepted.
  */
+
+import { isLushHost, LUSH_NAME } from '@core/lush-detector';
 
 /**
  * Common second-level labels used by multi-part public suffixes. This keeps the
@@ -56,32 +58,37 @@ export type ParsedProductUrl =
   | { ok: false; error: string };
 
 /**
- * Validate and normalize a product URL, returning the store domain when valid.
+ * Validate and normalize a product URL. Only `lush.com` URLs are accepted;
+ * anything else is rejected so it can never be persisted.
  */
 export function parseProductUrl(input: unknown): ParsedProductUrl {
   if (typeof input !== 'string' || input.trim() === '') {
-    return { ok: false, error: 'url is required' };
+    return { ok: false, error: 'La URL es obligatoria' };
   }
 
   let parsed: URL;
   try {
     parsed = new URL(input.trim());
   } catch {
-    return { ok: false, error: 'url must be an absolute http(s) URL' };
+    return { ok: false, error: 'La URL debe ser una URL absoluta http(s)' };
   }
 
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    return { ok: false, error: 'url must use http or https' };
+    return { ok: false, error: 'La URL debe usar http o https' };
   }
 
   if (!parsed.hostname) {
-    return { ok: false, error: 'url must include a host' };
+    return { ok: false, error: 'La URL debe incluir un host' };
+  }
+
+  if (!isLushHost(parsed.hostname)) {
+    return { ok: false, error: 'Solo se vigilan URLs de lush.com' };
   }
 
   return {
     ok: true,
     url: parsed.toString(),
     host: parsed.hostname.toLowerCase(),
-    tienda: getRegistrableDomain(parsed.hostname),
+    tienda: LUSH_NAME,
   };
 }
