@@ -53,13 +53,14 @@ export interface NewTrackedProduct {
 }
 
 /**
- * A tracked product as exposed to the browser/API: everything except the
- * Telegram `chat_id`, which is personal data and must never leave the server.
+ * A tracked product as exposed to the browser/API. The Telegram `chat_id` is
+ * included on purpose: on shared deployments several people register products
+ * and the list must show which chat each alert will go to. Anyone who can open
+ * the page can see every chat_id.
  */
-export type PublicTrackedProduct = Omit<TrackedProduct, 'chat_id'>;
+export type PublicTrackedProduct = TrackedProduct;
 
-/** Strip the private `chat_id` before a product is returned to a client. */
+/** Return the product as-is: `chat_id` is intentionally visible (see above). */
 export function toPublicProduct(product: TrackedProduct): PublicTrackedProduct {
-  const { chat_id: _omit, ...rest } = product;
-  return rest;
+  return product;
 }

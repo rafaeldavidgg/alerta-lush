@@ -49,6 +49,7 @@ export function ProductList({ products, onDelete }: ProductListProps) {
                 </span>{' '}
                 · {formatLastCheck(product.ultima_verificacion)}
               </div>
+              <div className="meta">Avisará al chat {product.chat_id}</div>
             </div>
             <button
               type="button"

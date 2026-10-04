@@ -39,16 +39,16 @@ describe('POST /api/products', () => {
     });
   });
 
-  it('never exposes the chat_id in the response', async () => {
+  it('includes the chat_id so shared deployments can tell chats apart', async () => {
     const createResponse = await POST(
       postRequest({ url: 'https://www.lush.com/es/es/p/x', chat_id: '987654' }),
     );
     const created = (await createResponse.json()) as { product: Record<string, unknown> };
-    expect(created.product).not.toHaveProperty('chat_id');
+    expect(created.product).toMatchObject({ chat_id: '987654' });
 
     const list = (await (await GET()).json()) as { products: Record<string, unknown>[] };
     expect(list.products).toHaveLength(1);
-    expect(list.products[0]).not.toHaveProperty('chat_id');
+    expect(list.products[0]).toMatchObject({ chat_id: '987654' });
   });
 
   it('rejects an invalid URL with field errors and does not persist', async () => {
