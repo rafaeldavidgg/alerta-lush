@@ -1,14 +1,11 @@
 name: Alerta Lush monitor
 
 on:
-  # Run every 15 minutes (UTC), offset from the top of the hour (3, 18, 33, 48)
-  # because GitHub delays/drops scheduled runs most often at minute :00.
-  # NOTE: GitHub scheduled workflows are best-effort: they can be delayed under
-  # load, and GitHub disables them after ~60 days of repository inactivity. If
-  # monitoring stops, push any commit or run the workflow manually to re-enable
-  # the schedule.
-  schedule:
-    - cron: '3,18,33,48 * * * *'
+  # Primary scheduler is now QStash hitting POST /api/cron/monitor every
+  # 15 minutes. The cron below stays commented as an emergency fallback:
+  # uncomment to re-enable GitHub Actions scheduling.
+  # schedule:
+  #   - cron: '3,18,33,48 * * * *'
   # Manual trigger for testing or recovery.
   workflow_dispatch:
 
