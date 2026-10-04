@@ -8,12 +8,12 @@ Lets a user register, view, and remove the Lush products Alerta Lush watches, an
 
 ### Requirement: Register a tracked product
 
-The system SHALL accept a product registration containing a product URL, a Telegram `chat_id`, and an optional label, and SHALL persist it as a tracked product. The system SHALL reject a registration whose URL is missing, malformed, or not an absolute `http(s)` URL, and SHALL reject a missing or non-numeric `chat_id`, without persisting anything. The system SHALL derive the store identifier from the URL host and SHALL assign the new product a unique `id`.
+The system SHALL accept a product registration containing a product URL, a Telegram `chat_id`, and an optional label, and SHALL persist it as a tracked product ONLY when the URL is an absolute `http(s)` URL under `lush.com` (dominio exacto o subdominio). The system SHALL reject a registration whose URL is missing, malformed, not absolute `http(s)`, or not under `lush.com`, and SHALL reject a missing or non-numeric `chat_id`, without persisting anything. The system SHALL fijar `tienda` a `Lush` (`lush.com`) y SHALL assign the new product a unique `id`.
 
 #### Scenario: Valid registration
 
 - **WHEN** a user submits `https://www.lush.com/es/es/p/silvery-moon-soap` with a chat_id and an optional label
-- **THEN** a tracked product is persisted with a unique id, the derived store `lush.com`, and the submitted URL, chat_id, and label
+- **THEN** a tracked product is persisted with a unique id, `tienda` Lush, and the submitted URL, chat_id, and label
 
 #### Scenario: Invalid URL
 
@@ -25,23 +25,28 @@ The system SHALL accept a product registration containing a product URL, a Teleg
 - **WHEN** a user submits a registration with an empty or non-numeric chat_id
 - **THEN** the registration is rejected with a validation message and no product is persisted
 
+#### Scenario: Non-Lush URL is rejected
+
+- **WHEN** a user submits `https://www.otra-tienda.com/producto/123` with an otherwise valid chat_id
+- **THEN** the registration is rejected with a validation message stating that only `lush.com` URLs are supported and no product is persisted
+
 ### Requirement: Tracked product record
 
-The system SHALL persist each tracked product with at least `id`, `url`, `chat_id`, `etiqueta` (optional label), `tienda` (derived store/domain), `estado_actual`, `estado_anterior`, `ultima_verificacion`, and `creado_en`. The state fields SHALL each hold exactly one of `in_stock`, `out_of_stock`, or `unknown`. A newly registered product SHALL start with no determined state until its first evaluation.
+The system SHALL persist each tracked product with at least `id`, `url`, `chat_id`, `etiqueta` (optional label), `tienda` (siempre `Lush`), `estado_actual`, `estado_anterior`, `ultima_verificacion`, and `creado_en`. The state fields SHALL each hold exactly one of `in_stock`, `out_of_stock`, or `unknown`. A newly registered product SHALL start with no determined state until its first evaluation. Los productos históricos de otras tiendas ya guardados SHALL conservarse sin migrar y quedan fuera del flujo de avisos.
 
 #### Scenario: Record shape
 
 - **WHEN** a tracked product is persisted and later read back
-- **THEN** all required fields are present, timestamps are ISO-8601, and the state fields use only the allowed values
+- **THEN** all required fields are present, `tienda` is Lush, timestamps are ISO-8601, and the state fields use only the allowed values
 
 ### Requirement: List tracked products
 
-The system SHALL provide a view that lists all tracked products, showing at least the label (or the URL when no label is set), the store, the current state, and the last verification time.
+The system SHALL provide a view that lists all tracked products, showing at least the label (or the URL when no label is set), the store (siempre Lush), the current state, and the last verification time.
 
 #### Scenario: Listing products
 
 - **WHEN** the user opens the product list
-- **THEN** every tracked product is shown with its label/URL, store, current state, and last verification time
+- **THEN** every tracked product is shown with its label/URL, Lush as store, current state, and last verification time
 
 ### Requirement: Remove a tracked product
 
@@ -83,31 +88,3 @@ The system SHALL display, next to the registration form and permanently visible 
 
 - **WHEN** the user opens the registration view
 - **THEN** the `chat_id` steps are visible alongside the form without any extra interaction
-
-### Requirement: Registration view lists supported stores
-
-The system SHALL display the user-facing store catalog (store names and domains) on the registration view, derived from the store registry as defined in `availability-detection`. The list SHALL update automatically when a real store is added, with no UI change required, and demo or fixture stores SHALL NOT appear.
-
-#### Scenario: Supported stores are shown, demo stores are not
-
-- **WHEN** the user opens the registration view
-- **THEN** Lush (`lush.com`) is listed and the `example-shop.test` fixture store is not
-
-#### Scenario: New real store appears automatically
-
-- **WHEN** a maintainer adds a new real store entry to the registry
-- **THEN** it appears in the registration view without modifying UI code
-
-### Requirement: Unsupported store URLs warn without blocking
-
-When the pasted product URL belongs to a store that is not in the user-facing catalog, the form SHALL show a non-blocking warning stating that the store is not supported and the product will remain in `unknown` state without notifications. Submission SHALL still be accepted, preserving the current acceptance behavior.
-
-#### Scenario: Unsupported URL shows a warning
-
-- **WHEN** the user enters a URL whose store is not in the supported catalog
-- **THEN** a warning is shown explaining that no availability detection exists for that store
-
-#### Scenario: Warning does not block submission
-
-- **WHEN** the user submits a registration with an unsupported-store URL that is otherwise valid
-- **THEN** the product is still persisted and the warning remains visible
